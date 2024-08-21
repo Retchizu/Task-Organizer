@@ -29,9 +29,10 @@ import { useTaskContext } from "../context/TaskContext";
 
 type TaskListProp = {
   tasks: Task[];
+  screenName: string;
 };
 
-const TaskList: React.FC<TaskListProp> = ({ tasks }) => {
+const TaskList: React.FC<TaskListProp> = ({ tasks, screenName }) => {
   const [isTaskModalVisible, setIsTaskModalVisible] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
@@ -198,29 +199,33 @@ const TaskList: React.FC<TaskListProp> = ({ tasks }) => {
               <Text style={styles.taskTitle} numberOfLines={1}>
                 {item.taskLabel}
               </Text>
-              <Text
-                style={[
-                  styles.taskDeadline,
-                  {
-                    color: item.taskDeadline
-                      ? isOnGoing(item.taskDeadline)
-                        ? "black"
-                        : "red"
-                      : "black",
-                  },
-                ]}
-              >
-                {item.taskDeadline ? dateFormatter(item.taskDeadline) : ""}
-              </Text>
+              {screenName === "pending" ? (
+                <View style={{ flexDirection: "row", alignItems: "center" }}>
+                  <Text
+                    style={[
+                      styles.taskDeadline,
+                      {
+                        color: item.taskDeadline
+                          ? isOnGoing(item.taskDeadline)
+                            ? "black"
+                            : "red"
+                          : "black",
+                      },
+                    ]}
+                  >
+                    {item.taskDeadline ? dateFormatter(item.taskDeadline) : ""}
+                  </Text>
 
-              {item.taskDeadline && (
-                <Fontisto
-                  name="date"
-                  size={16}
-                  color="black"
-                  style={{ margin: wp(1) }}
-                />
-              )}
+                  {item.taskDeadline && (
+                    <Fontisto
+                      name="date"
+                      size={16}
+                      color="black"
+                      style={{ margin: wp(1) }}
+                    />
+                  )}
+                </View>
+              ) : null}
             </View>
 
             <Text style={styles.taskDescription} numberOfLines={1}>
@@ -233,6 +238,7 @@ const TaskList: React.FC<TaskListProp> = ({ tasks }) => {
         isTaskModalVisible={isTaskModalVisible}
         toggleVisibility={handleTaskModalVisibility}
         taskSelected={selectedTask}
+        screenName={screenName}
       />
       <AddTask
         confirmFunction={confirmFunction}

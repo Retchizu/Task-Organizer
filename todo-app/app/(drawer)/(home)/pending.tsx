@@ -5,7 +5,7 @@ import TaskList from "../../../components/TaskList";
 import { useTaskContext } from "../../../context/TaskContext";
 import axios, { AxiosResponse } from "axios";
 import { getTaskUrl } from "../../../url";
-import { useRouter } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import AddTask from "../../../components/AddTask";
 import { useAddTaskModalContext } from "../../../context/AddTaskModalContext";
@@ -154,7 +154,7 @@ const task = () => {
         value={searchQuery}
         onChangeText={(text) => setSearchQuery(text)}
       />
-      <TaskList tasks={filteredTaskList} />
+      <TaskList tasks={filteredTaskList} screenName={"pending"} />
       <AddTask
         handleAction={handleTaskInfoChange}
         confirmFunction={confirmFunction}

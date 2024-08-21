@@ -18,19 +18,20 @@ import {
 } from "../task-methods/readableDate";
 import isOnGoing from "../task-methods/isOnGoing";
 import { useAddTaskModalContext } from "../context/AddTaskModalContext";
-import { updateTaskApi } from "../task-methods/updateTask";
-import { baseUrl, updateTaskUrl } from "../url";
+import { updateTaskUrl } from "../url";
 
 type TaskModalProp = {
   isTaskModalVisible: boolean;
   toggleVisibility: () => void;
   taskSelected: Task | null;
+  screenName: string;
 };
 
 const TaskModal: React.FC<TaskModalProp> = ({
   isTaskModalVisible,
   toggleVisibility,
   taskSelected,
+  screenName,
 }) => {
   const { tasks, setTaskList, updateTask } = useTaskContext();
   const { toggleUpdate } = useAddTaskModalContext();
@@ -48,6 +49,10 @@ const TaskModal: React.FC<TaskModalProp> = ({
     {
       id: 2,
       settingName: "Finish Task",
+    },
+    {
+      id: 3,
+      settingName: "Undo Task",
     },
   ];
 
@@ -83,13 +88,21 @@ const TaskModal: React.FC<TaskModalProp> = ({
             style={styles.iconSetting}
           />
         );
+      case 3:
+        return (
+          <Entypo
+            name="back"
+            size={24}
+            color="black"
+            style={styles.iconSetting}
+          />
+        );
       default:
         return null;
     }
   };
   const filterTaskListAndClose = () => {
     setTaskList(tasks.filter((item) => item.id !== taskSelected!.id));
-
     toggleVisibility();
   };
 
@@ -193,11 +206,84 @@ const TaskModal: React.FC<TaskModalProp> = ({
                     }
                   }
                   console.log((error as Error).message);
+                  console.log("Session expired, please log in again.");
+                  await SecureStore.deleteItemAsync("accessToken");
+                  await SecureStore.deleteItemAsync("refreshToken");
+                  router.replace("authentication/logIn");
                 }
               }
             };
+      case 3:
+        return async () => {
+          try {
+            if (taskSelected) {
+              const accessToken = SecureStore.getItem("accessToken");
+              const response = await axios.put(
+                `${updateTaskUrl}/${taskSelected?.id}`,
+                {
+                  taskStatus: "ongoing",
+                },
+                {
+                  headers: {
+                    Authorization: `${accessToken}`,
+                  },
+                }
+              );
+              if (response.status === 201) {
+                updateTask(taskSelected?.id, {
+                  taskStatus: "ongoing",
+                });
+              }
+              console.log(`${taskSelected.taskStatus} moved to ongoing`);
+              filterTaskListAndClose();
+            }
+          } catch (error) {
+            if (axios.isAxiosError(error)) {
+              if (error.response?.status === 401) {
+                const newAccessToken = await refreshToken();
+
+                if (taskSelected && newAccessToken === 200) {
+                  const response = await axios.put(
+                    `${updateTaskUrl}/${taskSelected.id}`,
+                    {
+                      taskStatus: "ongoing",
+                    },
+                    {
+                      headers: {
+                        Authorization: `${newAccessToken}`,
+                      },
+                    }
+                  );
+                  if (response?.status === 201) {
+                    updateTask(taskSelected.id, {
+                      taskStatus: "finished",
+                    });
+
+                    filterTaskListAndClose();
+                    console.log(
+                      response.status,
+                      `${taskSelected.taskLabel}, moved to ongoing in error`
+                    );
+                  }
+                } else {
+                  console.log("Session expired, please log in again.");
+                  await SecureStore.deleteItemAsync("accessToken");
+                  await SecureStore.deleteItemAsync("refreshToken");
+                  router.replace("authentication/logIn");
+                }
+              }
+            }
+            console.log((error as Error).message);
+            console.log("Session expired, please log in again.");
+            await SecureStore.deleteItemAsync("accessToken");
+            await SecureStore.deleteItemAsync("refreshToken");
+            router.replace("authentication/logIn");
+          }
+        };
     }
   };
+
+  console.log(taskSelected);
   return (
     <View>
       <Modal
@@ -214,7 +300,7 @@ const TaskModal: React.FC<TaskModalProp> = ({
             <Text style={styles.taskTitle} numberOfLines={2}>
               {taskSelected?.taskLabel}
             </Text>
-            {taskSelected?.taskDeadline && (
+            {taskSelected?.taskDeadline && screenName === "pending" && (
               <View>
                 <Text
                   style={[
@@ -271,18 +357,20 @@ const TaskModal: React.FC<TaskModalProp> = ({
                       </Text>
                     </TouchableOpacity>
                   ))
-              : taskSettingsChoices.map((item) => (
-                  <TouchableOpacity
-                    key={item.id}
-                    style={styles.choicesStyle}
-                    onPress={methodSeparator(item)}
-                  >
-                    {iconSeparator(item)}
-                    <Text style={styles.textChoiceStyle}>
-                      {item.settingName}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
+              : taskSettingsChoices
+                  .filter((item) => item.id !== 3)
+                  .map((item) => (
+                    <TouchableOpacity
+                      key={item.id}
+                      style={styles.choicesStyle}
+                      onPress={methodSeparator(item)}
+                    >
+                      {iconSeparator(item)}
+                      <Text style={styles.textChoiceStyle}>
+                        {item.settingName}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
           </View>
         </View>
       </Modal>
