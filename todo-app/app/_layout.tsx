@@ -29,7 +29,7 @@ const Layout = () => {
 
               headerBackVisible: false,
             }}
-            initialRouteName="index"
+            initialRouteName="(drawer)/account"
           >
             <Stack.Screen name="index" options={{ headerShown: false }} />
             <Stack.Screen
