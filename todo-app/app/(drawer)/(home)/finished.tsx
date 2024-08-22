@@ -8,12 +8,11 @@ import { useFocusEffect } from "@react-navigation/native";
 const finished = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const { tasks } = useTaskContext();
-  const [finishedTasks, setFinishedTasks] = useState(
-    tasks.filter((task) => task.taskStatus === "finished")
-  );
+  const [finishedTasks, setFinishedTasks] = useState<Task[]>([]);
 
   useEffect(() => {
     setFinishedTasks(tasks.filter((task) => task.taskStatus === "finished"));
+    console.log("rendered");
   }, [tasks]);
 
   console.log(tasks.filter((task) => task.taskStatus === "finished"));

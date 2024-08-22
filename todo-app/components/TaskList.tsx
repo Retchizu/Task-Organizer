@@ -174,6 +174,10 @@ const TaskList: React.FC<TaskListProp> = ({ tasks, screenName }) => {
       setDeadlineDate(null);
     }
   }, [isTaskModalVisible]);
+
+  useEffect(() => {
+    console.log("render list");
+  }, [tasks]);
   return (
     <View style={styles.taskListContainer}>
       <FlatList

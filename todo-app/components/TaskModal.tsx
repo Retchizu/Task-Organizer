@@ -102,7 +102,6 @@ const TaskModal: React.FC<TaskModalProp> = ({
     }
   };
   const filterTaskListAndClose = () => {
-    setTaskList(tasks.filter((item) => item.id !== taskSelected!.id));
     toggleVisibility();
   };
 
