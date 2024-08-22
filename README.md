@@ -27,3 +27,7 @@ The Full Stack Task Organizer is a mobile application designed to help users man
 - **User Authentication:** Secure login and registration system with JWT and bcrypt.
 - **Real-Time Updates:** Ensure tasks are kept up to date with the latest changes.
 - **Responsive UI:** Optimized for mobile devices with smooth navigation using Expo Router.
+
+## Design
+
+- **Figma Design Link:** [View the Figma Design](https://www.figma.com/design/tg71B2r3wJRdg4406DkSb1/To-Do?node-id=0-1&t=0H63LCk7r1Y6KFRm-1)
