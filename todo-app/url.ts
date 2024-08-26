@@ -1,9 +1,10 @@
-const baseUrl = "http://192.168.1.4:3000";
+const baseUrl = "http://192.168.1.2:3000";
 
 const registerUrl = `${baseUrl}/users/register`;
 const logInUrl = `${baseUrl}/users/login`;
 const logOutUrl = `${baseUrl}/users/logout`;
 const refreshTokenUrl = `${baseUrl}/users/refresh-token`;
+const updateDisplayPictureUrl = `${baseUrl}/users/add-display-picture`;
 const getTaskUrl = `${baseUrl}/task/get-task`;
 const currentUserUrl = `${baseUrl}/users/current`;
 const addTaskUrl = `${baseUrl}/task/create-task`;
@@ -15,6 +16,7 @@ export {
   registerUrl,
   logInUrl,
   refreshTokenUrl,
+  updateDisplayPictureUrl,
   getTaskUrl,
   currentUserUrl,
   addTaskUrl,

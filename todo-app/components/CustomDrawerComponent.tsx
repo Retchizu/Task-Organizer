@@ -24,7 +24,11 @@ const CustomDrawerComponent = (props: any) => {
     <SafeAreaView style={{ flex: 1 }}>
       <AppTitle text="Retchi" />
       <Image
-        source={require("../assets/ambatukam.jpg")}
+        source={
+          user?.displayPicture
+            ? { uri: `data:image/png;base64,${user.displayPicture}` }
+            : require("../assets/ambatukam.jpg")
+        }
         style={{
           width: 100,
           height: 100,
