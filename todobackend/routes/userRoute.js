@@ -26,4 +26,9 @@ router.get("/current", validateToken, userController.currentUser);
 router.post("/refresh-token", userController.refreshToken);
 
 router.get("/logout", validateToken, userController.logout);
+router.put(
+  "/add-display-picture",
+  validateToken,
+  userController.updateUserProfilePicture
+);
 module.exports = router;

@@ -227,3 +227,19 @@ exports.deleteExpiredToken = async () => {
     console.log(error.message);
   }
 };
+
+exports.updateUserProfilePicture = async (req, res) => {
+  try {
+    const { displayPicture } = req.body;
+    await User.findByIdAndUpdate(
+      { _id: req.user.id },
+      {
+        displayPicture: displayPicture,
+      }
+    );
+    const updatedUser = await User.findById({ _id: req.user.id });
+    return res.status(200).json(updatedUser);
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
