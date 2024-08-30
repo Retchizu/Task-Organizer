@@ -22,8 +22,8 @@ const parseDuration = (duration) => {
   }
 };
 
-const refreshTokenExpiration = "3m";
-const accessTokenExpiration = "1m";
+const refreshTokenExpiration = "1h";
+const accessTokenExpiration = "10m";
 
 exports.registerUser = async (req, res) => {
   try {
