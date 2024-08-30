@@ -11,8 +11,8 @@ import { TouchableOpacity, View } from "react-native";
 import { useAddTaskModalContext } from "../../context/AddTaskModalContext";
 
 const DrawerLayout = () => {
-  const { toggleModal, isOpen } = useAddTaskModalContext();
-  console.log(isOpen);
+  const { toggleAddVisible } = useAddTaskModalContext();
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <Drawer
@@ -41,7 +41,7 @@ const DrawerLayout = () => {
             >
               <TouchableOpacity
                 style={{ marginHorizontal: wp(4) }}
-                onPress={() => toggleModal()}
+                onPress={() => toggleAddVisible()}
               >
                 <FontAwesome6 name="square-plus" size={24} color="white" />
               </TouchableOpacity>

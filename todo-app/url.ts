@@ -1,4 +1,4 @@
-const baseUrl = "http://192.168.1.2:3000";
+const baseUrl = "http://192.168.1.3:3000";
 
 const registerUrl = `${baseUrl}/users/register`;
 const logInUrl = `${baseUrl}/users/login`;

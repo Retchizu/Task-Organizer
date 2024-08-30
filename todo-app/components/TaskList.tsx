@@ -26,6 +26,7 @@ import DateTimePicker, {
   DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
 import { useTaskContext } from "../context/TaskContext";
+import { useNotifcationContext } from "../context/NotificationContext";
 
 type TaskListProp = {
   tasks: Task[];
@@ -41,12 +42,13 @@ const TaskList: React.FC<TaskListProp> = ({ tasks, screenName }) => {
     taskDescription: "",
   });
 
-  const { isUpdate, toggleUpdate } = useAddTaskModalContext();
+  const { isUpdateVisible, toggleUpdateVisible } = useAddTaskModalContext();
   const [mode, setMode] = useState<"date" | "time">("date");
   const [deadlineDate, setDeadlineDate] = useState<Date | null>(null);
   const [isDeadlineSetted, setIsDeadlineSetted] = useState(false);
   const [isDatePickerVisible, setIsDatePickerVisible] = useState(false);
   const { updateTask } = useTaskContext();
+  const { schedulePushNotification } = useNotifcationContext();
 
   const router = useRouter();
 
@@ -113,15 +115,19 @@ const TaskList: React.FC<TaskListProp> = ({ tasks, screenName }) => {
               ? deadlineDate
               : selectedTask.taskDeadline,
           });
+          if (deadlineDate) {
+            schedulePushNotification(response.data);
+          }
           removeSetMark();
-          toggleUpdate();
+          toggleUpdateVisible();
+
           console.log(response.status, "Updated Successfully");
         }
       }
     } catch (error) {
       const axiosError = await handleUnauthorizedAccess(error);
       if (axiosError) {
-        toggleUpdate();
+        toggleUpdateVisible();
         router.replace("authentication/logIn");
         return;
       } else {
@@ -145,8 +151,12 @@ const TaskList: React.FC<TaskListProp> = ({ tasks, screenName }) => {
                 : selectedTask.taskDeadline,
             });
           }
+          if (deadlineDate) {
+            console.log(response.data);
+            schedulePushNotification(response.data);
+          }
           removeSetMark();
-          toggleUpdate();
+          toggleUpdateVisible();
           console.log(response.status, "Updated Successfully in error");
         } else {
           console.log((error as Error).message);
@@ -166,7 +176,7 @@ const TaskList: React.FC<TaskListProp> = ({ tasks, screenName }) => {
   }, [selectedTask, isTaskModalVisible]);
 
   useEffect(() => {
-    if (!isTaskModalVisible && !isUpdate) {
+    if (!isTaskModalVisible && !isUpdateVisible) {
       setSelectedTaskInfo({
         taskLabel: "",
         taskDescription: "",
@@ -175,9 +185,6 @@ const TaskList: React.FC<TaskListProp> = ({ tasks, screenName }) => {
     }
   }, [isTaskModalVisible]);
 
-  useEffect(() => {
-    console.log("render list");
-  }, [tasks]);
   return (
     <View style={styles.taskListContainer}>
       <FlatList
@@ -248,10 +255,10 @@ const TaskList: React.FC<TaskListProp> = ({ tasks, screenName }) => {
         confirmFunction={confirmFunction}
         handleAction={handleTaskInfoChange}
         deadlineDate={deadlineDate}
-        isAddTaskModalVisible={isUpdate}
+        isAddTaskModalVisible={isUpdateVisible}
         removeSet={removeSetMark}
         set={isDeadlineSetted}
-        setIsAddTaskModalVisible={toggleUpdate}
+        setIsAddTaskModalVisible={toggleUpdateVisible}
         showMode={showMode}
         modalMode="update"
         value={selectedTaskInfo}

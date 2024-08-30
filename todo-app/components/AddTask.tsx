@@ -122,12 +122,20 @@ const AddTask: React.FC<AddTaskProps> = ({
               />
             )}
           </View>
-          <Button
-            title={"Confirm"}
-            buttonStyle={styles.confirmButtonStyle}
-            titleStyle={styles.confirmButtonTitleStyle}
-            onPress={() => confirmFunction()}
-          />
+          <View style={styles.buttonContainer}>
+            <Button
+              title={"Cancel"}
+              buttonStyle={styles.confirmButtonStyle}
+              titleStyle={styles.confirmButtonTitleStyle}
+              onPress={() => setIsAddTaskModalVisible()}
+            />
+            <Button
+              title={"Confirm"}
+              buttonStyle={styles.confirmButtonStyle}
+              titleStyle={styles.confirmButtonTitleStyle}
+              onPress={() => confirmFunction()}
+            />
+          </View>
         </View>
       </View>
     </Modal>
@@ -175,11 +183,14 @@ const styles = StyleSheet.create({
   confirmButtonStyle: {
     backgroundColor: "#929AAB",
     borderRadius: wp(2),
-    marginHorizontal: wp(20),
     marginTop: hp(3),
   },
   confirmButtonTitleStyle: {
     fontFamily: "Inconsolata-Medium",
     fontSize: hp(2.5),
+  },
+  buttonContainer: {
+    justifyContent: "space-evenly",
+    flexDirection: "row",
   },
 });

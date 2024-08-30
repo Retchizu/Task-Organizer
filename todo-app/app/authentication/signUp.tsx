@@ -47,7 +47,7 @@ const signUp = () => {
           userPassword: "",
           userConfirmPassword: "",
         });
-        console.log(response.data);
+
         router.replace("authentication/logIn");
         console.log("registered successfully");
       } catch (error) {
@@ -135,7 +135,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#929AAB",
     borderRadius: wp(3),
     marginTop: hp(1),
-    paddingVertical: -1,
   },
-  buttonTextStyle: { fontFamily: "Inconsolata-Medium", fontSize: hp(2.5) },
+  buttonTextStyle: { fontFamily: "Inconsolata-Medium", fontSize: wp(4) },
 });

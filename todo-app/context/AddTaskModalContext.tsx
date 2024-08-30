@@ -1,10 +1,10 @@
 import { createContext, ReactNode, useContext, useState } from "react";
 
 type ModalContextValue = {
-  isOpen: boolean;
-  toggleModal: () => void;
-  isUpdate: boolean;
-  toggleUpdate: () => void;
+  isAddVisible: boolean;
+  toggleAddVisible: () => void;
+  isUpdateVisible: boolean;
+  toggleUpdateVisible: () => void;
 };
 
 const AddTaskModal = createContext<ModalContextValue | undefined>(undefined);
@@ -12,20 +12,25 @@ const AddTaskModal = createContext<ModalContextValue | undefined>(undefined);
 export const AddTaskModalProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [isUpdate, setIsUpdate] = useState(false);
+  const [isAddVisible, setIsAddvisible] = useState(false);
+  const [isUpdateVisible, setIsUpdateVIsible] = useState(false);
 
-  const toggleModal = () => {
-    setIsOpen(!isOpen);
+  const toggleAddVisible = () => {
+    setIsAddvisible(!isAddVisible);
   };
 
-  const toggleUpdate = () => {
-    setIsUpdate(!isUpdate);
+  const toggleUpdateVisible = () => {
+    setIsUpdateVIsible(!isUpdateVisible);
   };
 
   return (
     <AddTaskModal.Provider
-      value={{ isOpen, toggleModal, isUpdate, toggleUpdate }}
+      value={{
+        isAddVisible,
+        toggleAddVisible,
+        isUpdateVisible,
+        toggleUpdateVisible,
+      }}
     >
       {children}
     </AddTaskModal.Provider>

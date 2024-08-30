@@ -6,7 +6,6 @@ import {
 import { Button } from "@rneui/base";
 import { useRouter } from "expo-router";
 import { useFonts } from "expo-font";
-import * as SecureStore from "expo-secure-store";
 import { refreshToken as refreshTokenMethod } from "../task-methods/refreshToken";
 import { useUserContext } from "../context/UserContext";
 import { getUser } from "../task-methods/logInUser";
@@ -42,6 +41,7 @@ const App = () => {
         setIsLoading(false);
         return;
       }
+
       handleTokenErrors(refreshTokenResult);
     } catch (error) {
       console.log("Error:", (error as Error).message);
@@ -57,7 +57,7 @@ const App = () => {
   useEffect(() => {
     if (user) {
       router.replace("(drawer)/(home)/pending");
-      console.log("User is now set:", user);
+      console.log("User is now setted");
     }
   }, [user]);
 
@@ -85,8 +85,9 @@ const styles = StyleSheet.create({
   },
   welcomeMessage: {
     fontFamily: "Inconsolata-ExtraBold",
-    fontSize: hp(3.5),
+    fontSize: wp(5.5),
     marginBottom: hp(3),
+    textAlign: "center",
   },
   welcomeButton: {
     borderRadius: wp(3),

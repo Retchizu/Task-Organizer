@@ -5,7 +5,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   heightPercentageToDP as hp,
   widthPercentageToDP as wp,
@@ -29,14 +29,24 @@ const Form: React.FC<FormProps> = ({
   isPasswordVisible,
   setIsPasswordVisible,
 }) => {
+  const [iconLabel, setIconLabel] = useState<"eye" | "eye-with-line">(
+    "eye-with-line"
+  );
+  useEffect(() => {
+    if (isPasswordVisible) {
+      setIconLabel("eye");
+    } else {
+      setIconLabel("eye-with-line");
+    }
+  }, [isPasswordVisible]);
   return (
     <View>
       <View style={styles.formContainer}>
         <Text
           style={{
-            flex: wp(0.05),
+            flex: 0.5,
             fontFamily: "Inconsolata-Regular",
-            fontSize: hp(2.2),
+            fontSize: wp(3.5),
           }}
         >{`${formLabel}:`}</Text>
         {isFormPassword ? (
@@ -56,16 +66,13 @@ const Form: React.FC<FormProps> = ({
               secureTextEntry={isPasswordVisible}
             />
             <TouchableOpacity
+              style={{ justifyContent: "center" }}
               onPress={() => {
                 if (setIsPasswordVisible)
                   setIsPasswordVisible(!isPasswordVisible);
               }}
             >
-              {!isPasswordVisible ? (
-                <Entypo name="eye-with-line" size={24} color="black" />
-              ) : (
-                <Entypo name="eye" size={24} color="black" />
-              )}
+              <Entypo name={iconLabel} color="black" />
             </TouchableOpacity>
           </View>
         ) : (
@@ -101,5 +108,6 @@ const styles = StyleSheet.create({
   },
   formInputStyle: {
     flex: 1,
+    fontSize: wp(3.5),
   },
 });

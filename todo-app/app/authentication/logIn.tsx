@@ -32,7 +32,7 @@ const logIn = () => {
       <Text
         style={{
           alignSelf: "center",
-          fontSize: hp(4),
+          fontSize: wp(6),
           fontFamily: "Inconsolata-SemiBold",
           marginBottom: hp(3),
         }}
@@ -66,7 +66,6 @@ const logIn = () => {
           );
           if (result === 200) {
             const currentUser = await getUser();
-            console.log("current user", currentUser);
             signUser(currentUser);
 
             router.replace("(drawer)/(home)/pending");
@@ -97,7 +96,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#929AAB",
     borderRadius: wp(3),
     marginTop: hp(1),
-    paddingVertical: -1,
   },
-  buttonTextStyle: { fontFamily: "Inconsolata-Medium", fontSize: hp(2.5) },
+  buttonTextStyle: { fontFamily: "Inconsolata-Medium", fontSize: wp(4) },
 });

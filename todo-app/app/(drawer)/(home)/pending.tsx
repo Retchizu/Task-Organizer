@@ -15,6 +15,7 @@ import DateTimePicker, {
 import { handleUnauthorizedAccess } from "../../../task-methods/handleUnauthorizedAccess";
 import { addTaskApi } from "../../../task-methods/addTask";
 import { taskSearchFilterOnGoing } from "../../../task-methods/taskSearchFilter";
+import { useNotifcationContext } from "../../../context/NotificationContext";
 
 const task = () => {
   const { tasks, setTaskList } = useTaskContext();
@@ -29,7 +30,8 @@ const task = () => {
   const [isDeadlineSetted, setIsDeadlineSetted] = useState(false);
   const [filteredTaskList, setFilteredTaskList] = useState<Task[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const { isOpen, toggleModal } = useAddTaskModalContext();
+  const { isAddVisible, toggleAddVisible } = useAddTaskModalContext();
+  const { schedulePushNotification } = useNotifcationContext();
 
   const handleTaskInfoChange = (label: string, value: string) => {
     setTask((prevInfo) => ({
@@ -45,7 +47,7 @@ const task = () => {
     });
     setDeadlineDate(new Date());
     removeSetMark();
-    toggleModal();
+    toggleAddVisible();
   };
 
   const confirmFunction = async () => {
@@ -56,6 +58,12 @@ const task = () => {
         response = await addTaskApi(accessToken, task, deadlineDate);
 
       if (response?.status === 201) {
+        console.log("response for args", response.data);
+
+        if (deadlineDate) {
+          schedulePushNotification(response.data);
+        }
+
         resetAddTaskModalFormAndClose();
         console.log(response.status, "Added Successfully");
       }
@@ -70,6 +78,9 @@ const task = () => {
         if (accessToken)
           response = await addTaskApi(accessToken, task, deadlineDate);
         if (response?.status === 201) {
+          if (deadlineDate) {
+            schedulePushNotification(response.data);
+          }
           resetAddTaskModalFormAndClose();
           console.log(response.status, "Added Successfully in error");
         } else {
@@ -158,8 +169,8 @@ const task = () => {
       <AddTask
         handleAction={handleTaskInfoChange}
         confirmFunction={confirmFunction}
-        isAddTaskModalVisible={isOpen}
-        setIsAddTaskModalVisible={toggleModal}
+        isAddTaskModalVisible={isAddVisible}
+        setIsAddTaskModalVisible={toggleAddVisible}
         showMode={showMode}
         set={isDeadlineSetted}
         removeSet={removeSetMark}

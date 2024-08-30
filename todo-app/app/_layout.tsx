@@ -12,6 +12,7 @@ const Layout = () => {
   if (!loaded) {
     return null;
   }
+
   return (
     <UserProvider>
       <AddTaskModalProvider>

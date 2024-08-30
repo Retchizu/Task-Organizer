@@ -1,4 +1,11 @@
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+  InteractionManager,
+  Platform,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import React from "react";
 import Modal from "react-native-modal";
 import {
@@ -33,8 +40,8 @@ const TaskModal: React.FC<TaskModalProp> = ({
   taskSelected,
   screenName,
 }) => {
-  const { tasks, setTaskList, updateTask } = useTaskContext();
-  const { toggleUpdate } = useAddTaskModalContext();
+  const { updateTask, setTaskList, tasks } = useTaskContext();
+  const { toggleUpdateVisible } = useAddTaskModalContext();
   const router = useRouter();
 
   const taskSettingsChoices = [
@@ -103,6 +110,7 @@ const TaskModal: React.FC<TaskModalProp> = ({
   };
   const filterTaskListAndClose = () => {
     toggleVisibility();
+    setTaskList(tasks.filter((task) => task.id !== taskSelected!.id));
   };
 
   const methodSeparator = (taskSettingChoice: {
@@ -113,7 +121,7 @@ const TaskModal: React.FC<TaskModalProp> = ({
       case 0:
         return () => {
           toggleVisibility();
-          toggleUpdate();
+          toggleUpdateVisible();
         };
       case 1:
         return async () => {
