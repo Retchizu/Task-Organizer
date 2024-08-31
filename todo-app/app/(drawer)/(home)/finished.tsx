@@ -12,13 +12,12 @@ const finished = () => {
 
   useEffect(() => {
     setFinishedTasks(tasks.filter((task) => task.taskStatus === "finished"));
-    console.log("rendered");
   }, [tasks]);
 
   useEffect(() => {
     setFinishedTasks(taskSearchFilterFinished(searchQuery, tasks));
   }, [searchQuery, tasks]);
-  console.log(tasks.filter((task) => task.taskStatus === "finished"));
+
   return (
     <View style={{ flex: 1 }}>
       <SearchBar

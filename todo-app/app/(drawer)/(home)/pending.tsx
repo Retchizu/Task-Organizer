@@ -1,11 +1,11 @@
-import { View } from "react-native";
+import { Platform, View } from "react-native";
 import React, { useEffect, useState } from "react";
 import SearchBar from "../../../components/SearchBar";
 import TaskList from "../../../components/TaskList";
 import { useTaskContext } from "../../../context/TaskContext";
 import axios, { AxiosResponse } from "axios";
 import { getTaskUrl } from "../../../url";
-import { useFocusEffect, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import AddTask from "../../../components/AddTask";
 import { useAddTaskModalContext } from "../../../context/AddTaskModalContext";
@@ -16,6 +16,7 @@ import { handleUnauthorizedAccess } from "../../../task-methods/handleUnauthoriz
 import { addTaskApi } from "../../../task-methods/addTask";
 import { taskSearchFilterOnGoing } from "../../../task-methods/taskSearchFilter";
 import { useNotifcationContext } from "../../../context/NotificationContext";
+import { calendarDisplaySeparator } from "../../../task-methods/calendarDisplaySeparator";
 
 const task = () => {
   const { tasks, setTaskList } = useTaskContext();
@@ -32,6 +33,7 @@ const task = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const { isAddVisible, toggleAddVisible } = useAddTaskModalContext();
   const { schedulePushNotification } = useNotifcationContext();
+  const [isDateVisibleInIos, setIsDateVisibleInIos] = useState(false);
 
   const handleTaskInfoChange = (label: string, value: string) => {
     setTask((prevInfo) => ({
@@ -93,17 +95,26 @@ const task = () => {
   const onChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
     const currentDate = selectedDate;
 
-    if (mode === "date" && event.type !== "dismissed") {
+    if (Platform.OS === "ios") {
       setDeadlineDate(currentDate ? currentDate : new Date());
-      setIsDatePickerVisible(false);
       setIsDeadlineSetted(true);
+      console.log("did run");
     }
-    if (mode === "time" && event.type !== "dismissed") {
-      setDeadlineDate(currentDate ? currentDate : new Date());
+    if (Platform.OS === "android") {
+      if (mode === "date" && event.type !== "dismissed") {
+        setDeadlineDate(currentDate ? currentDate : new Date());
+        setIsDatePickerVisible(false);
+        setIsDeadlineSetted(true);
+      }
+      if (mode === "time" && event.type !== "dismissed") {
+        setDeadlineDate(currentDate ? currentDate : new Date());
+        setIsDatePickerVisible(false);
+        setIsDeadlineSetted(true);
+      }
+    }
+    if (Platform.OS === "android") {
       setIsDatePickerVisible(false);
-      setIsDeadlineSetted(true);
     }
-    setIsDatePickerVisible(false);
   };
 
   const showMode = (mode: "date" | "time") => {
@@ -177,11 +188,17 @@ const task = () => {
         deadlineDate={deadlineDate}
         modalMode={"add"}
         value={task}
+        deadlineForIos={deadlineDate}
+        onChangeForIos={onChange}
+        isDateVisibleInIos={isDateVisibleInIos}
+        setIsDateVisibleInIos={setIsDateVisibleInIos}
+        deadlineSetter={setDeadlineDate}
       />
-      {isDatePickerVisible && (
+      {isDatePickerVisible && Platform.OS === "android" && (
         <DateTimePicker
           value={deadlineDate ? deadlineDate : new Date()}
           mode={mode}
+          display={calendarDisplaySeparator(mode)}
           onChange={onChange}
         />
       )}

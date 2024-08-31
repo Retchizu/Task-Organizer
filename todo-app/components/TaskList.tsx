@@ -38,18 +38,22 @@ const TaskList: React.FC<TaskListProp> = ({ tasks, screenName }) => {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
   const [selectedTaskInfo, setSelectedTaskInfo] = useState({
-    taskLabel: "",
-    taskDescription: "",
+    taskLabel: selectedTask?.taskLabel ? selectedTask.taskLabel.toString() : "",
+    taskDescription: selectedTask?.taskDescription
+      ? selectedTask.taskDescription.toString()
+      : "",
   });
 
   const { isUpdateVisible, toggleUpdateVisible } = useAddTaskModalContext();
   const [mode, setMode] = useState<"date" | "time">("date");
-  const [deadlineDate, setDeadlineDate] = useState<Date | null>(null);
+  const [deadlineDate, setDeadlineDate] = useState<Date | null>(
+    selectedTask?.taskDeadline ?? null
+  );
   const [isDeadlineSetted, setIsDeadlineSetted] = useState(false);
   const [isDatePickerVisible, setIsDatePickerVisible] = useState(false);
   const { updateTask } = useTaskContext();
   const { schedulePushNotification } = useNotifcationContext();
-
+  const [isDateVisibleInIos, setIsDateVisibleInIos] = useState(false);
   const router = useRouter();
 
   const showMode = (currentMode: "date" | "time") => {
@@ -175,16 +179,6 @@ const TaskList: React.FC<TaskListProp> = ({ tasks, screenName }) => {
     }
   }, [selectedTask, isTaskModalVisible]);
 
-  useEffect(() => {
-    if (!isTaskModalVisible && !isUpdateVisible) {
-      setSelectedTaskInfo({
-        taskLabel: "",
-        taskDescription: "",
-      });
-      setDeadlineDate(null);
-    }
-  }, [isTaskModalVisible]);
-
   return (
     <View style={styles.taskListContainer}>
       <FlatList
@@ -263,6 +257,8 @@ const TaskList: React.FC<TaskListProp> = ({ tasks, screenName }) => {
         modalMode="update"
         value={selectedTaskInfo}
         deadlineSetter={setDeadlineDate}
+        isDateVisibleInIos={isDateVisibleInIos}
+        setIsDateVisibleInIos={setIsDateVisibleInIos}
       />
       {isDatePickerVisible && (
         <DateTimePicker

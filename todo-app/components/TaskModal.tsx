@@ -1,11 +1,4 @@
-import {
-  InteractionManager,
-  Platform,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import React from "react";
 import Modal from "react-native-modal";
 import {
@@ -13,19 +6,21 @@ import {
   widthPercentageToDP as wp,
 } from "react-native-responsive-screen";
 import Entypo from "@expo/vector-icons/Entypo";
-import { deleteTask } from "../task-methods/deleteTask";
 import { useTaskContext } from "../context/TaskContext";
-import axios, { AxiosResponse } from "axios";
-import * as SecureStore from "expo-secure-store";
 import { useRouter } from "expo-router";
-import { refreshToken } from "../task-methods/refreshToken";
 import {
   readableDateDay,
   readableDateTime,
 } from "../task-methods/readableDate";
 import isOnGoing from "../task-methods/isOnGoing";
 import { useAddTaskModalContext } from "../context/AddTaskModalContext";
-import { updateTaskUrl } from "../url";
+import AntDesign from "@expo/vector-icons/AntDesign";
+import {
+  deleteTaskFromList,
+  setTaskToFinished,
+  setTaskToOngoing,
+  toggleEditTaskModal,
+} from "../task-methods/methodSeparator";
 
 type TaskModalProp = {
   isTaskModalVisible: boolean;
@@ -119,178 +114,38 @@ const TaskModal: React.FC<TaskModalProp> = ({
   }) => {
     switch (taskSettingChoice.id) {
       case 0:
-        return () => {
-          toggleVisibility();
-          toggleUpdateVisible();
-        };
+        return () => toggleEditTaskModal(toggleVisibility, toggleUpdateVisible);
       case 1:
         return async () => {
-          const response = await deleteTask(taskSelected!.id);
-
-          if (response === 500) {
-            console.log("Something went wrong, try again later");
-          }
-
-          if (response === 401) {
-            const newAccessToken = await refreshToken();
-            if (newAccessToken === 200) {
-              await deleteTask(taskSelected!.id);
-              console.log("Deleted Successfully");
-              filterTaskListAndClose();
-            }
-            if (newAccessToken === 401) {
-              console.log("Sessions Exipred, Log in again");
-              await SecureStore.deleteItemAsync("accessToken");
-              await SecureStore.deleteItemAsync("refreshToken");
-              router.replace("authentication/logIn");
-            }
-          }
-          if (response == 200) {
-            console.log("Deleted Successfully");
-            filterTaskListAndClose();
-          }
+          if (taskSelected)
+            await deleteTaskFromList(
+              taskSelected,
+              router,
+              filterTaskListAndClose
+            );
         };
+
       case 2:
         return taskSelected?.taskStatus === "finished"
           ? () => {}
-          : async () => {
-              if (taskSelected) {
-                const accessToken = SecureStore.getItem("accessToken");
-                try {
-                  const response = await axios.put(
-                    `${updateTaskUrl}/${taskSelected.id}`,
-                    {
-                      taskStatus: "finished",
-                    },
-                    {
-                      headers: {
-                        Authorization: `${accessToken}`,
-                      },
-                    }
-                  );
-
-                  if (response.status === 201) {
-                    updateTask(taskSelected.id, {
-                      taskStatus: "finished",
-                    });
-                    console.log(`${taskSelected.taskLabel}, marked as done`);
-                    filterTaskListAndClose();
-                  }
-                } catch (error) {
-                  if (axios.isAxiosError(error)) {
-                    if (error.response?.status === 401) {
-                      const newAccessToken = await refreshToken();
-
-                      if (taskSelected && newAccessToken === 200) {
-                        const response = await axios.put(
-                          `${updateTaskUrl}/${taskSelected.id}`,
-                          {
-                            taskStatus: "finished",
-                          },
-                          {
-                            headers: {
-                              Authorization: `${newAccessToken}`,
-                            },
-                          }
-                        );
-                        if (response?.status === 201) {
-                          updateTask(taskSelected.id, {
-                            taskStatus: "finished",
-                          });
-
-                          filterTaskListAndClose();
-                          console.log(
-                            response.status,
-                            `${taskSelected.taskLabel}, marked as done in error`
-                          );
-                        }
-                      } else {
-                        console.log("Session expired, please log in again.");
-                        await SecureStore.deleteItemAsync("accessToken");
-                        await SecureStore.deleteItemAsync("refreshToken");
-                        router.replace("authentication/logIn");
-                      }
-                    }
-                  }
-                  console.log((error as Error).message);
-                  console.log("Session expired, please log in again.");
-                  await SecureStore.deleteItemAsync("accessToken");
-                  await SecureStore.deleteItemAsync("refreshToken");
-                  router.replace("authentication/logIn");
-                }
-              }
-            };
-      case 3:
-        return async () => {
-          try {
-            if (taskSelected) {
-              const accessToken = SecureStore.getItem("accessToken");
-              const response = await axios.put(
-                `${updateTaskUrl}/${taskSelected?.id}`,
-                {
-                  taskStatus: "ongoing",
-                },
-                {
-                  headers: {
-                    Authorization: `${accessToken}`,
-                  },
-                }
+          : async () =>
+              await setTaskToFinished(
+                taskSelected!,
+                updateTask,
+                router,
+                toggleVisibility
               );
-              if (response.status === 201) {
-                updateTask(taskSelected?.id, {
-                  taskStatus: "ongoing",
-                });
-              }
-              console.log(`${taskSelected.taskStatus} moved to ongoing`);
-              filterTaskListAndClose();
-            }
-          } catch (error) {
-            if (axios.isAxiosError(error)) {
-              if (error.response?.status === 401) {
-                const newAccessToken = await refreshToken();
-
-                if (taskSelected && newAccessToken === 200) {
-                  const response = await axios.put(
-                    `${updateTaskUrl}/${taskSelected.id}`,
-                    {
-                      taskStatus: "ongoing",
-                    },
-                    {
-                      headers: {
-                        Authorization: `${newAccessToken}`,
-                      },
-                    }
-                  );
-                  if (response?.status === 201) {
-                    updateTask(taskSelected.id, {
-                      taskStatus: "finished",
-                    });
-
-                    filterTaskListAndClose();
-                    console.log(
-                      response.status,
-                      `${taskSelected.taskLabel}, moved to ongoing in error`
-                    );
-                  }
-                } else {
-                  console.log("Session expired, please log in again.");
-                  await SecureStore.deleteItemAsync("accessToken");
-                  await SecureStore.deleteItemAsync("refreshToken");
-                  router.replace("authentication/logIn");
-                }
-              }
-            }
-            console.log((error as Error).message);
-            console.log("Session expired, please log in again.");
-            await SecureStore.deleteItemAsync("accessToken");
-            await SecureStore.deleteItemAsync("refreshToken");
-            router.replace("authentication/logIn");
-          }
-        };
+      case 3:
+        return async () =>
+          await setTaskToOngoing(
+            taskSelected!,
+            updateTask,
+            router,
+            toggleVisibility
+          );
     }
   };
 
-  console.log(taskSelected);
   return (
     <View>
       <Modal
@@ -304,6 +159,10 @@ const TaskModal: React.FC<TaskModalProp> = ({
       >
         <View style={styles.parentModalContainer}>
           <View style={styles.modalContainer}>
+            <TouchableOpacity onPress={() => toggleVisibility()}>
+              <AntDesign name="close" size={24} color="black" />
+            </TouchableOpacity>
+
             <Text style={styles.taskTitle} numberOfLines={2}>
               {taskSelected?.taskLabel}
             </Text>

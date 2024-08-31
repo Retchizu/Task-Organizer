@@ -1,11 +1,12 @@
 import {
+  Platform,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
-import React, { SetStateAction } from "react";
+import React from "react";
 import Modal from "react-native-modal";
 import {
   heightPercentageToDP as hp,
@@ -18,6 +19,10 @@ import {
   readableDateDay,
   readableDateTime,
 } from "../task-methods/readableDate";
+import DateTimePicker, {
+  DateTimePickerEvent,
+} from "@react-native-community/datetimepicker";
+import AntDesign from "@expo/vector-icons/AntDesign";
 
 type AddTaskProps = {
   handleAction: (label: string, value: string) => void;
@@ -31,6 +36,10 @@ type AddTaskProps = {
   value?: { taskLabel: string; taskDescription: string };
   modalMode: string;
   deadlineSetter?: React.Dispatch<React.SetStateAction<Date | null>>;
+  deadlineForIos?: Date | null;
+  onChangeForIos?: (event: DateTimePickerEvent, selectedDate?: Date) => void;
+  setIsDateVisibleInIos: React.Dispatch<React.SetStateAction<boolean>>;
+  isDateVisibleInIos: boolean;
 };
 
 const AddTask: React.FC<AddTaskProps> = ({
@@ -45,6 +54,9 @@ const AddTask: React.FC<AddTaskProps> = ({
   value,
   modalMode,
   deadlineSetter,
+  setIsDateVisibleInIos,
+  isDateVisibleInIos,
+  onChangeForIos,
 }) => {
   return (
     <Modal
@@ -80,54 +92,117 @@ const AddTask: React.FC<AddTaskProps> = ({
               value={value?.taskDescription}
             />
           </View>
-          <View style={styles.setDeadlineContainerStyle}>
-            <TouchableOpacity
-              style={{ marginRight: wp(1) }}
-              onPress={() => {
-                if (!deadlineDate && deadlineSetter) {
-                  deadlineSetter(new Date());
-                }
-                showMode("date");
-              }}
-            >
-              <Text style={styles.labelStyle}>
-                {deadlineDate ? readableDateDay(deadlineDate) : "Set Date"}
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={{ marginLeft: wp(1) }}
-              onPress={() => {
-                if (!deadlineDate && deadlineSetter) {
-                  deadlineSetter(new Date());
-                }
-                showMode("time");
-              }}
-            >
-              <Text style={styles.labelStyle}>
-                {deadlineDate ? readableDateTime(deadlineDate) : "Set Time"}
-              </Text>
-            </TouchableOpacity>
-            <FontAwesome
-              name="calendar-plus-o"
-              size={24}
-              color="black"
-              style={{ marginLeft: wp(2) }}
-            />
-            {set && (
-              <Entypo
-                name="check"
+          {Platform.OS === "android" && (
+            <View style={styles.setDeadlineContainerStyle}>
+              <TouchableOpacity
+                style={{ marginRight: wp(1) }}
+                onPress={() => {
+                  if (!deadlineDate && deadlineSetter) {
+                    deadlineSetter(new Date());
+                  }
+                  showMode("date");
+                }}
+              >
+                <Text style={styles.labelStyle}>
+                  {deadlineDate ? readableDateDay(deadlineDate) : "Set Date"}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={{ marginLeft: wp(1) }}
+                onPress={() => {
+                  if (!deadlineDate && deadlineSetter) {
+                    deadlineSetter(new Date());
+                  }
+                  showMode("time");
+                }}
+              >
+                <Text style={styles.labelStyle}>
+                  {deadlineDate ? readableDateTime(deadlineDate) : "Set Time"}
+                </Text>
+              </TouchableOpacity>
+              <FontAwesome
+                name="calendar-plus-o"
                 size={24}
-                color="green"
+                color="black"
                 style={{ marginLeft: wp(2) }}
               />
-            )}
-          </View>
+              {set && (
+                <Entypo
+                  name="check"
+                  size={24}
+                  color="green"
+                  style={{ marginLeft: wp(2) }}
+                />
+              )}
+            </View>
+          )}
+          {Platform.OS === "ios" && !isDateVisibleInIos && (
+            <View style={styles.setDeadlineContainerStyle}>
+              <TouchableOpacity
+                style={{ marginRight: wp(1) }}
+                onPress={() => {
+                  if (!deadlineDate && deadlineSetter) {
+                    setIsDateVisibleInIos(true);
+                    deadlineSetter(new Date());
+                  }
+                }}
+              >
+                <Text style={styles.labelStyle}>
+                  {deadlineDate ? readableDateDay(deadlineDate) : "Set Date"}
+                </Text>
+              </TouchableOpacity>
+
+              <FontAwesome
+                name="calendar-plus-o"
+                size={24}
+                color="black"
+                style={{ marginLeft: wp(2) }}
+              />
+            </View>
+          )}
+          {isDateVisibleInIos && Platform.OS === "ios" && (
+            <View
+              style={{
+                alignItems: "center",
+                marginTop: hp(2),
+                flexDirection: "row",
+                justifyContent: "center",
+              }}
+            >
+              <TouchableOpacity
+                onPress={() => {
+                  setIsDateVisibleInIos(false);
+                  removeSet();
+                  if (deadlineSetter) deadlineSetter(null);
+                }}
+              >
+                <AntDesign name="close" size={24} color="black" />
+              </TouchableOpacity>
+              <DateTimePicker
+                value={deadlineDate ? deadlineDate : new Date()}
+                mode={"datetime"}
+                onChange={onChangeForIos}
+              />
+              {set && (
+                <Entypo
+                  name="check"
+                  size={24}
+                  color="green"
+                  style={{ marginLeft: wp(2) }}
+                />
+              )}
+            </View>
+          )}
+
           <View style={styles.buttonContainer}>
             <Button
               title={"Cancel"}
               buttonStyle={styles.confirmButtonStyle}
               titleStyle={styles.confirmButtonTitleStyle}
-              onPress={() => setIsAddTaskModalVisible()}
+              onPress={() => {
+                setIsAddTaskModalVisible();
+                removeSet();
+              }}
             />
             <Button
               title={"Confirm"}
@@ -147,9 +222,7 @@ export default AddTask;
 const styles = StyleSheet.create({
   contentViewStyle: {
     backgroundColor: "white",
-    height: hp(60),
     width: wp(90),
-    maxHeight: hp(60),
     maxWidth: wp(90),
     borderRadius: wp(5),
     padding: wp(5),
@@ -187,7 +260,7 @@ const styles = StyleSheet.create({
   },
   confirmButtonTitleStyle: {
     fontFamily: "Inconsolata-Medium",
-    fontSize: hp(2.5),
+    fontSize: hp(2),
   },
   buttonContainer: {
     justifyContent: "space-evenly",

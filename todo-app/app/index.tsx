@@ -11,6 +11,7 @@ import { useUserContext } from "../context/UserContext";
 import { getUser } from "../task-methods/logInUser";
 import { useEffect, useState } from "react";
 import { handleTokenErrors } from "../task-methods/handleTokenErrors";
+import * as SecureStore from "expo-secure-store";
 
 const App = () => {
   const [loaded] = useFonts({
@@ -29,8 +30,9 @@ const App = () => {
   const autoLogIn = async () => {
     try {
       setIsLoading(true);
-
+      const refreshToken = SecureStore.getItem("refreshToken");
       const refreshTokenResult = await refreshTokenMethod();
+      console.log(refreshTokenResult);
 
       if (refreshTokenResult === 200) {
         const userResult = await getUser();
@@ -40,6 +42,9 @@ const App = () => {
         handleTokenErrors(userResult);
         setIsLoading(false);
         return;
+      }
+      if (refreshToken && refreshTokenResult === 401) {
+        router.replace("authentication/logIn");
       }
 
       handleTokenErrors(refreshTokenResult);

@@ -9,9 +9,22 @@ import {
 } from "react-native-responsive-screen";
 import { TouchableOpacity, View } from "react-native";
 import { useAddTaskModalContext } from "../../context/AddTaskModalContext";
+import { useRoute } from "@react-navigation/native";
+import { useRouter } from "expo-router";
 
 const DrawerLayout = () => {
   const { toggleAddVisible } = useAddTaskModalContext();
+  const route = useRoute();
+  const router = useRouter();
+
+  const handleHeaderAddPress = () => {
+    if (route.name !== "pending") {
+      router.navigate("(home)/pending");
+      toggleAddVisible();
+    } else {
+      toggleAddVisible();
+    }
+  };
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -41,7 +54,7 @@ const DrawerLayout = () => {
             >
               <TouchableOpacity
                 style={{ marginHorizontal: wp(4) }}
-                onPress={() => toggleAddVisible()}
+                onPress={() => handleHeaderAddPress()}
               >
                 <FontAwesome6 name="square-plus" size={24} color="white" />
               </TouchableOpacity>
