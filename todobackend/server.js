@@ -28,7 +28,7 @@ db.once("open", () => {
   }
 });
 
-cron.schedule("*/2 * * * *", userController.deleteExpiredToken); //runs every 12 midnight for testing, change when final
+cron.schedule("0 * * * *", userController.deleteExpiredToken); // runs every one hour change later
 
 app.use("/users", userRoute);
 app.use("/task", taskRoute);
