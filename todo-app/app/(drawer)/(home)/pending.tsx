@@ -28,7 +28,6 @@ const task = () => {
   const [deadlineDate, setDeadlineDate] = useState<Date | null>(null);
   const [isDatePickerVisible, setIsDatePickerVisible] = useState(false);
   const [mode, setMode] = useState<"date" | "time">("date");
-  const [isDeadlineSetted, setIsDeadlineSetted] = useState(false);
   const [filteredTaskList, setFilteredTaskList] = useState<Task[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const { isAddVisible, toggleAddVisible } = useAddTaskModalContext();
@@ -97,19 +96,15 @@ const task = () => {
 
     if (Platform.OS === "ios") {
       setDeadlineDate(currentDate ? currentDate : new Date());
-      setIsDeadlineSetted(true);
-      console.log("did run");
     }
     if (Platform.OS === "android") {
       if (mode === "date" && event.type !== "dismissed") {
         setDeadlineDate(currentDate ? currentDate : new Date());
         setIsDatePickerVisible(false);
-        setIsDeadlineSetted(true);
       }
       if (mode === "time" && event.type !== "dismissed") {
         setDeadlineDate(currentDate ? currentDate : new Date());
         setIsDatePickerVisible(false);
-        setIsDeadlineSetted(true);
       }
     }
     if (Platform.OS === "android") {
@@ -123,7 +118,6 @@ const task = () => {
   };
   const removeSetMark = () => {
     setDeadlineDate(null);
-    setIsDeadlineSetted(false);
   };
 
   useEffect(() => {
@@ -183,7 +177,6 @@ const task = () => {
         isAddTaskModalVisible={isAddVisible}
         setIsAddTaskModalVisible={toggleAddVisible}
         showMode={showMode}
-        set={isDeadlineSetted}
         removeSet={removeSetMark}
         deadlineDate={deadlineDate}
         modalMode={"add"}

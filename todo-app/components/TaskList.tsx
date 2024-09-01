@@ -115,9 +115,7 @@ const TaskList: React.FC<TaskListProp> = ({ tasks, screenName }) => {
             taskDescription: selectedTaskInfo.taskDescription
               ? selectedTaskInfo.taskDescription
               : selectedTask.taskDescription,
-            taskDeadline: deadlineDate
-              ? deadlineDate
-              : selectedTask.taskDeadline,
+            taskDeadline: deadlineDate ?? undefined,
           });
           if (deadlineDate) {
             schedulePushNotification(response.data);
@@ -251,7 +249,6 @@ const TaskList: React.FC<TaskListProp> = ({ tasks, screenName }) => {
         deadlineDate={deadlineDate}
         isAddTaskModalVisible={isUpdateVisible}
         removeSet={removeSetMark}
-        set={isDeadlineSetted}
         setIsAddTaskModalVisible={toggleUpdateVisible}
         showMode={showMode}
         modalMode="update"

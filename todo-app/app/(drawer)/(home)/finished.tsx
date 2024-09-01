@@ -30,5 +30,3 @@ const finished = () => {
 };
 
 export default finished;
-
-const styles = StyleSheet.create({});

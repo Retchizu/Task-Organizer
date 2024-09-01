@@ -13,6 +13,8 @@ export const refreshToken = async (): Promise<any> => {
       refreshToken: refreshToken,
     });
 
+    console.log("new refreshToken is", response.data.newRefreshToken);
+
     SecureStore.setItem("accessToken", response.data.newAccessToken);
     SecureStore.setItem("refreshToken", response.data.newRefreshToken);
 

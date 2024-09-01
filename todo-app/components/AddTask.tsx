@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import React from "react";
+import React, { useState } from "react";
 import Modal from "react-native-modal";
 import {
   heightPercentageToDP as hp,
@@ -14,7 +14,6 @@ import {
 } from "react-native-responsive-screen";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { Button } from "@rneui/base";
-import Entypo from "@expo/vector-icons/Entypo";
 import {
   readableDateDay,
   readableDateTime,
@@ -30,7 +29,6 @@ type AddTaskProps = {
   isAddTaskModalVisible: boolean;
   setIsAddTaskModalVisible: () => void;
   showMode: (currentMode: "date" | "time") => void;
-  set: boolean;
   removeSet: () => void;
   deadlineDate: Date | null;
   value?: { taskLabel: string; taskDescription: string };
@@ -48,7 +46,6 @@ const AddTask: React.FC<AddTaskProps> = ({
   isAddTaskModalVisible,
   setIsAddTaskModalVisible,
   showMode,
-  set,
   removeSet,
   deadlineDate,
   value,
@@ -58,6 +55,7 @@ const AddTask: React.FC<AddTaskProps> = ({
   isDateVisibleInIos,
   onChangeForIos,
 }) => {
+  const [removeDateInAndroid, setRemoveDateInAndroid] = useState(false);
   return (
     <Modal
       isVisible={isAddTaskModalVisible}
@@ -94,9 +92,21 @@ const AddTask: React.FC<AddTaskProps> = ({
           </View>
           {Platform.OS === "android" && (
             <View style={styles.setDeadlineContainerStyle}>
+              {removeDateInAndroid && (
+                <TouchableOpacity
+                  onPress={() => {
+                    setRemoveDateInAndroid(false);
+                    if (deadlineSetter) deadlineSetter(null);
+                  }}
+                >
+                  <AntDesign name="close" size={24} color="black" />
+                </TouchableOpacity>
+              )}
+
               <TouchableOpacity
                 style={{ marginRight: wp(1) }}
                 onPress={() => {
+                  setRemoveDateInAndroid(true);
                   if (!deadlineDate && deadlineSetter) {
                     deadlineSetter(new Date());
                   }
@@ -110,6 +120,7 @@ const AddTask: React.FC<AddTaskProps> = ({
               <TouchableOpacity
                 style={{ marginLeft: wp(1) }}
                 onPress={() => {
+                  setRemoveDateInAndroid(true);
                   if (!deadlineDate && deadlineSetter) {
                     deadlineSetter(new Date());
                   }
@@ -126,14 +137,6 @@ const AddTask: React.FC<AddTaskProps> = ({
                 color="black"
                 style={{ marginLeft: wp(2) }}
               />
-              {set && (
-                <Entypo
-                  name="check"
-                  size={24}
-                  color="green"
-                  style={{ marginLeft: wp(2) }}
-                />
-              )}
             </View>
           )}
           {Platform.OS === "ios" && !isDateVisibleInIos && (
@@ -144,6 +147,8 @@ const AddTask: React.FC<AddTaskProps> = ({
                   if (!deadlineDate && deadlineSetter) {
                     setIsDateVisibleInIos(true);
                     deadlineSetter(new Date());
+                  } else {
+                    setIsDateVisibleInIos(true);
                   }
                 }}
               >
@@ -171,9 +176,13 @@ const AddTask: React.FC<AddTaskProps> = ({
             >
               <TouchableOpacity
                 onPress={() => {
-                  setIsDateVisibleInIos(false);
-                  removeSet();
-                  if (deadlineSetter) deadlineSetter(null);
+                  if (modalMode === "add") {
+                    setIsDateVisibleInIos(false);
+                    if (deadlineSetter) deadlineSetter(null);
+                  } else {
+                    setIsDateVisibleInIos(false);
+                    if (deadlineSetter) deadlineSetter(deadlineDate);
+                  }
                 }}
               >
                 <AntDesign name="close" size={24} color="black" />
@@ -183,14 +192,6 @@ const AddTask: React.FC<AddTaskProps> = ({
                 mode={"datetime"}
                 onChange={onChangeForIos}
               />
-              {set && (
-                <Entypo
-                  name="check"
-                  size={24}
-                  color="green"
-                  style={{ marginLeft: wp(2) }}
-                />
-              )}
             </View>
           )}
 
@@ -200,6 +201,7 @@ const AddTask: React.FC<AddTaskProps> = ({
               buttonStyle={styles.confirmButtonStyle}
               titleStyle={styles.confirmButtonTitleStyle}
               onPress={() => {
+                setIsDateVisibleInIos(false);
                 setIsAddTaskModalVisible();
                 removeSet();
               }}
