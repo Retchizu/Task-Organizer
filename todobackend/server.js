@@ -5,6 +5,7 @@ const mongoose = require("mongoose");
 require("dotenv").config();
 const userRoute = require("./routes/userRoute");
 const taskRoute = require("./routes/toDoRoute");
+const notificationRoute = require("./routes/notificationRoute");
 const cron = require("node-cron");
 const userController = require("./controllers/userController");
 
@@ -32,3 +33,4 @@ cron.schedule("0 * * * *", userController.deleteExpiredToken); // runs every one
 
 app.use("/users", userRoute);
 app.use("/task", taskRoute);
+app.use("/notification", notificationRoute);

@@ -219,7 +219,7 @@ exports.deleteExpiredToken = async () => {
     });
 
     console.log(
-      "expired tokens cleaned",
+      "expired tokens cleaned\n",
       invalidAccessTokenResult,
       invalidRefreshTokenResult
     );

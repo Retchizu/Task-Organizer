@@ -48,15 +48,24 @@ exports.updateTask = async (req, res) => {
   try {
     const { id } = req.params;
     const { taskLabel, taskDescription, taskStatus, taskDeadline } = req.body;
-    await Task.findByIdAndUpdate(
-      { _id: id, userId: req.user.id },
-      {
-        ...(taskLabel && { taskLabel }),
-        ...(taskDescription && { taskDescription }),
-        ...(taskStatus && { taskStatus }),
-        ...(taskDeadline && { taskDeadline }),
-      }
-    );
+
+    const updateData = {
+      ...(taskLabel && { taskLabel }),
+      ...(taskDescription && { taskDescription }),
+      ...(taskStatus && { taskStatus }),
+    };
+
+    console.log(taskDeadline);
+    taskDeadline
+      ? (updateData.taskDeadline = taskDeadline)
+      : (updateData.$unset = { taskDeadline: "" });
+    taskDescription
+      ? (updateData.taskDescription = taskDescription)
+      : (updateData.$unset = { taskDescription: "" });
+
+    await Task.findByIdAndUpdate({ _id: id, userId: req.user.id }, updateData, {
+      new: true,
+    });
     const updatedTask = await Task.findById({ _id: id, userId: req.user.id });
     return res.status(201).json(updatedTask);
   } catch (error) {
