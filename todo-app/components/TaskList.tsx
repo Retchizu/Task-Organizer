@@ -20,7 +20,7 @@ import { AxiosResponse } from "axios";
 import * as SecureStore from "expo-secure-store";
 import { updateTaskApi } from "../task-methods/updateTask";
 import { useRouter } from "expo-router";
-import { handleUnauthorizedAccess } from "../task-methods/handleUnauthorizedAccess";
+import { handleUnauthorizedAccess } from "../task-methods/auth-methods/handleUnauthorizedAccess";
 import { useAddTaskModalContext } from "../context/AddTaskModalContext";
 import DateTimePicker, {
   DateTimePickerEvent,
@@ -49,7 +49,6 @@ const TaskList: React.FC<TaskListProp> = ({ tasks, screenName }) => {
   const [deadlineDate, setDeadlineDate] = useState<Date | null>(
     selectedTask?.taskDeadline ?? null
   );
-  const [isDeadlineSetted, setIsDeadlineSetted] = useState(false);
   const [isDatePickerVisible, setIsDatePickerVisible] = useState(false);
   const { updateTask } = useTaskContext();
   const { schedulePushNotification } = useNotifcationContext();
@@ -78,7 +77,6 @@ const TaskList: React.FC<TaskListProp> = ({ tasks, screenName }) => {
     });
     setDeadlineDate(null);
     setSelectedTask(null);
-    setIsDeadlineSetted(false);
   };
 
   const onChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
@@ -87,12 +85,10 @@ const TaskList: React.FC<TaskListProp> = ({ tasks, screenName }) => {
     if (mode === "date" && event.type !== "dismissed") {
       setDeadlineDate(currentDate ? currentDate : new Date());
       setIsDatePickerVisible(false);
-      setIsDeadlineSetted(true);
     }
     if (mode === "time" && event.type !== "dismissed") {
       setDeadlineDate(currentDate ? currentDate : new Date());
       setIsDatePickerVisible(false);
-      setIsDeadlineSetted(true);
     }
     setIsDatePickerVisible(false);
   };
@@ -106,7 +102,7 @@ const TaskList: React.FC<TaskListProp> = ({ tasks, screenName }) => {
           response = await updateTaskApi(
             selectedTask.id,
             selectedTaskInfo,
-            selectedTask.taskDeadline
+            deadlineDate ? deadlineDate : selectedTask.taskDeadline
           );
 
         if (response?.status === 201) {

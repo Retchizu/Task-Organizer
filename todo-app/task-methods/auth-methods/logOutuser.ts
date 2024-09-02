@@ -1,5 +1,5 @@
 import axios from "axios";
-import { logOutUrl } from "../url";
+import { logOutUrl } from "../../url";
 import * as SecureStore from "expo-secure-store";
 
 export const logOutUser = async () => {

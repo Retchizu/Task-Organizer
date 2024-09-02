@@ -11,11 +11,18 @@ import { TouchableOpacity, View } from "react-native";
 import { useAddTaskModalContext } from "../../context/AddTaskModalContext";
 import { useRoute } from "@react-navigation/native";
 import { useRouter } from "expo-router";
+import { Badge } from "@rneui/base";
+import { useEffect, useState } from "react";
+import { useNotificationModalContext } from "../../context/NotificationModalContext";
+import { useNotifcationContext } from "../../context/NotificationContext";
 
 const DrawerLayout = () => {
   const { toggleAddVisible } = useAddTaskModalContext();
+  const { toggleNotificationModalVisibility } = useNotificationModalContext();
   const route = useRoute();
   const router = useRouter();
+  const [notificationValue, setNotificationValue] = useState(0);
+  const { notificationList } = useNotifcationContext();
 
   const handleHeaderAddPress = () => {
     if (route.name !== "pending") {
@@ -25,6 +32,10 @@ const DrawerLayout = () => {
       toggleAddVisible();
     }
   };
+
+  useEffect(() => {
+    setNotificationValue(notificationList.length);
+  }, [notificationList]);
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -59,10 +70,25 @@ const DrawerLayout = () => {
                 <FontAwesome6 name="square-plus" size={24} color="white" />
               </TouchableOpacity>
               <TouchableOpacity
-                style={{ marginRight: wp(4), marginLeft: wp(1) }}
+                style={{
+                  marginRight: wp(4),
+                  marginLeft: wp(1),
+                }}
+                onPress={() => toggleNotificationModalVisibility()}
               >
                 <FontAwesome6 name="bell" size={24} color="white" />
               </TouchableOpacity>
+              {notificationValue > 0 && (
+                <Badge
+                  value={notificationValue}
+                  containerStyle={{
+                    position: "absolute",
+                    right: wp(2),
+                    bottom: hp(1.9),
+                  }}
+                  badgeStyle={{ backgroundColor: "#929AAB" }}
+                />
+              )}
             </View>
           ),
         }}

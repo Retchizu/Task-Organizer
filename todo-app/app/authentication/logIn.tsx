@@ -7,7 +7,7 @@ import {
 } from "react-native-responsive-screen";
 import { useRouter } from "expo-router";
 import { Button } from "@rneui/base";
-import { getUser, logInUser } from "../../task-methods/logInUser";
+import { getUser, logInUser } from "../../task-methods/auth-methods/logInUser";
 import { useUserContext } from "../../context/UserContext";
 
 const logIn = () => {

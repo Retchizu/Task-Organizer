@@ -1,6 +1,6 @@
 import { Router } from "expo-router";
 import { deleteTask } from "./deleteTask";
-import { refreshToken } from "./refreshToken";
+import { refreshToken } from "./auth-methods/refreshToken";
 import * as SecureStore from "expo-secure-store";
 import { updateTaskStatus } from "./updateTaskStatus";
 import axios from "axios";

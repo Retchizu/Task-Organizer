@@ -1,5 +1,5 @@
 import axios from "axios";
-import { currentUserUrl, logInUrl } from "../url";
+import { currentUserUrl, logInUrl } from "../../url";
 import * as SecureStore from "expo-secure-store";
 
 export const logInUser = async (email: string, password: string) => {

@@ -13,3 +13,11 @@ type User = {
   userName: String;
   displayPicture: String;
 };
+
+type TaskNotification = {
+  _id: String;
+  userId: String;
+  isRead: false;
+  notificationMessage: String;
+  task: Task;
+};

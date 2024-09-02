@@ -1,5 +1,5 @@
 import axios from "axios";
-import { refreshTokenUrl } from "../url";
+import { refreshTokenUrl } from "../../url";
 import * as SecureStore from "expo-secure-store";
 
 export const refreshToken = async (): Promise<any> => {

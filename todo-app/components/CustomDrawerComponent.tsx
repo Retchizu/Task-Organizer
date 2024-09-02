@@ -13,7 +13,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AppTitle, DrawerLabel, UserName } from "./DrawerLabelComponent";
 import { useUserContext } from "../context/UserContext";
-import { logOutUser } from "../task-methods/logOutuser";
+import { logOutUser } from "../task-methods/auth-methods/logOutuser";
 import { useRouter } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 

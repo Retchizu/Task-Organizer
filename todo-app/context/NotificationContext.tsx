@@ -10,10 +10,15 @@ import {
   useState,
 } from "react";
 import { Platform } from "react-native";
+import { storeNotification } from "../task-methods/notification-methods/storeNotification";
+import { useRouter } from "expo-router";
+import { getCurrentUser } from "../task-methods/auth-methods/currentUser";
 
 type NotificationContextValue = {
   expoPushToken: string;
   schedulePushNotification: (task: Task) => Promise<void>;
+  notificationList: TaskNotification[];
+  setNotificationList: React.Dispatch<React.SetStateAction<TaskNotification[]>>;
 };
 
 const NotificationContext = createContext<NotificationContextValue | undefined>(
@@ -24,8 +29,12 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
   const [expoPushToken, setExpoPushToken] = useState("");
+  const [notificationList, setNotificationList] = useState<TaskNotification[]>(
+    []
+  );
   const notificationListener = useRef<Notifications.Subscription | null>(null);
   const responseListener = useRef<Notifications.Subscription | null>(null);
+  const router = useRouter();
 
   Notifications.setNotificationHandler({
     handleNotification: async () => ({
@@ -90,7 +99,7 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({
         content: {
           title: "Task Reminder!",
           body: `${task.taskLabel} is halfway to its deadline`,
-          data: { taskId: task.id },
+          data: { task: task },
         },
         trigger: { seconds: (taskMidPoint - now) / 1000 },
       });
@@ -103,13 +112,75 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({
     );
 
     notificationListener.current =
-      Notifications.addNotificationReceivedListener((notification) => {
-        console.log("Notification received:", notification);
+      Notifications.addNotificationReceivedListener(async (notification) => {
+        console.log(
+          "Notification received:",
+          notification.request.content.data
+        );
+        const user = await getCurrentUser(router);
+        const task: Task = notification.request.content.data.task;
+        if (user) {
+          const result = await storeNotification(
+            user.id,
+            task.id.toString(),
+            "Upcoming deadline!",
+            router
+          );
+          setNotificationList((prev) => [
+            ...prev,
+            {
+              _id: result._id,
+              userId: result.userId,
+              isRead: result.isRead,
+              notificationMessage: result.notificationMessage,
+              task: {
+                id: task.id,
+                userId: task.userId,
+                taskLabel: task.taskLabel,
+                taskDescription: task.taskDescription,
+                taskStatus: task.taskStatus,
+                taskDeadline: new Date(task.taskDeadline),
+              },
+            },
+          ]);
+        }
       });
+
     responseListener.current =
-      Notifications.addNotificationResponseReceivedListener((response) => {
-        console.log("Notification response:", response);
-      });
+      Notifications.addNotificationResponseReceivedListener(
+        async (response) => {
+          console.log("Notification response:", response.notification);
+          const user = await getCurrentUser(router);
+
+          const task: Task = response.notification.request.content.data.task; // returned as null when clicked outside the app, fix later
+          if (user) {
+            const result = await storeNotification(
+              user.id,
+              task.id.toString(),
+              "Upcoming deadline!",
+              router
+            );
+
+            setNotificationList((prev) => [
+              ...prev,
+              {
+                _id: result._id,
+                userId: result.userId,
+                isRead: result.isRead,
+                notificationMessage: result.notificationMessage,
+                task: {
+                  id: task.id,
+                  userId: task.userId,
+                  taskLabel: task.taskLabel,
+                  taskDescription: task.taskDescription,
+                  taskStatus: task.taskStatus,
+                  taskDeadline: new Date(task.taskDeadline),
+                },
+              },
+            ]);
+          }
+        }
+      );
 
     return () => {
       if (notificationListener.current && responseListener.current) {
@@ -117,13 +188,20 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({
           notificationListener.current
         );
         Notifications.removeNotificationSubscription(responseListener.current);
+
+        console.log("notification listener removed");
       }
     };
-  }, []);
+  }, [router]);
 
   return (
     <NotificationContext.Provider
-      value={{ expoPushToken, schedulePushNotification }}
+      value={{
+        expoPushToken,
+        schedulePushNotification,
+        notificationList,
+        setNotificationList,
+      }}
     >
       {children}
     </NotificationContext.Provider>

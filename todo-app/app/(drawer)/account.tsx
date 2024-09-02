@@ -13,7 +13,7 @@ import * as FileSystem from "expo-file-system";
 import axios from "axios";
 import { updateDisplayPictureUrl } from "../../url";
 import * as SecureStore from "expo-secure-store";
-import { handleUnauthorizedAccess } from "../../task-methods/handleUnauthorizedAccess";
+import { handleUnauthorizedAccess } from "../../task-methods/auth-methods/handleUnauthorizedAccess";
 import { useRouter } from "expo-router";
 
 const account = () => {

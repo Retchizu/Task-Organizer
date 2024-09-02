@@ -8,7 +8,7 @@ import Form from "../../components/Form";
 import { useRouter } from "expo-router";
 import { Button } from "@rneui/base";
 import axios from "axios";
-import { baseUrl, registerUrl } from "../../url";
+import { registerUrl } from "../../url";
 
 const signUp = () => {
   const router = useRouter();

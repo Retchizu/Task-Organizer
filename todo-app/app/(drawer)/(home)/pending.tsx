@@ -12,11 +12,12 @@ import { useAddTaskModalContext } from "../../../context/AddTaskModalContext";
 import DateTimePicker, {
   DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
-import { handleUnauthorizedAccess } from "../../../task-methods/handleUnauthorizedAccess";
+import { handleUnauthorizedAccess } from "../../../task-methods/auth-methods/handleUnauthorizedAccess";
 import { addTaskApi } from "../../../task-methods/addTask";
 import { taskSearchFilterOnGoing } from "../../../task-methods/taskSearchFilter";
 import { useNotifcationContext } from "../../../context/NotificationContext";
 import { calendarDisplaySeparator } from "../../../task-methods/calendarDisplaySeparator";
+import NotificationModal from "../../../components/NotificationModal";
 
 const task = () => {
   const { tasks, setTaskList } = useTaskContext();

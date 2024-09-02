@@ -6,9 +6,9 @@ import {
 import { Button } from "@rneui/base";
 import { useRouter } from "expo-router";
 import { useFonts } from "expo-font";
-import { refreshToken as refreshTokenMethod } from "../task-methods/refreshToken";
+import { refreshToken as refreshTokenMethod } from "../task-methods/auth-methods/refreshToken";
 import { useUserContext } from "../context/UserContext";
-import { getUser } from "../task-methods/logInUser";
+import { getUser } from "../task-methods/auth-methods/logInUser";
 import { useEffect, useState } from "react";
 import { handleTokenErrors } from "../task-methods/handleTokenErrors";
 import * as SecureStore from "expo-secure-store";

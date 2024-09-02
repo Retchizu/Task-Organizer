@@ -5,8 +5,10 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  TouchableWithoutFeedback,
+  Keyboard,
 } from "react-native";
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import Modal from "react-native-modal";
 import {
   heightPercentageToDP as hp,
@@ -56,6 +58,11 @@ const AddTask: React.FC<AddTaskProps> = ({
   onChangeForIos,
 }) => {
   const [removeDateInAndroid, setRemoveDateInAndroid] = useState(false);
+  const descriptionRef = useRef<TextInput | null>(null);
+
+  const focusDescriptionTextbox = () => {
+    descriptionRef.current?.focus();
+  };
   return (
     <Modal
       isVisible={isAddTaskModalVisible}
@@ -67,154 +74,163 @@ const AddTask: React.FC<AddTaskProps> = ({
       animationInTiming={1000}
       animationOutTiming={1000}
     >
-      <View style={styles.modalStyle}>
-        <View style={styles.contentViewStyle}>
-          <Text style={styles.modalTitle}>
-            {modalMode === "add" ? "Add" : "Update"} a task
-          </Text>
-          <Text style={styles.labelStyle}>Title:</Text>
-          <TextInput
-            style={styles.titleTextInputStyle}
-            placeholder="task title..."
-            onChangeText={(text) => handleAction("taskLabel", text)}
-            maxLength={30}
-            value={value?.taskLabel}
-          />
-          <Text style={styles.labelStyle}>Description:</Text>
-          <View style={styles.descriptionTextInputContainerStyle}>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View style={styles.modalStyle}>
+          <View style={styles.contentViewStyle}>
+            <Text style={styles.modalTitle}>
+              {modalMode === "add" ? "Add" : "Update"} a task
+            </Text>
+            <Text style={styles.labelStyle}>Title:</Text>
             <TextInput
-              style={{ padding: wp(1), fontFamily: "Inconsolata-Regular" }}
-              placeholder="task description..."
-              multiline
-              onChangeText={(text) => handleAction("taskDescription", text)}
-              value={value?.taskDescription}
+              style={styles.titleTextInputStyle}
+              placeholder="task title..."
+              onChangeText={(text) => handleAction("taskLabel", text)}
+              maxLength={30}
+              value={value?.taskLabel}
             />
-          </View>
-          {Platform.OS === "android" && (
-            <View style={styles.setDeadlineContainerStyle}>
-              {removeDateInAndroid && (
+            <Text style={styles.labelStyle}>Description:</Text>
+
+            <TouchableOpacity
+              style={styles.descriptionTextInputContainerStyle}
+              onPress={() => focusDescriptionTextbox()}
+              activeOpacity={1}
+            >
+              <TextInput
+                style={{ padding: wp(1), fontFamily: "Inconsolata-Regular" }}
+                placeholder="task description..."
+                multiline
+                onChangeText={(text) => handleAction("taskDescription", text)}
+                value={value?.taskDescription}
+                ref={descriptionRef}
+              />
+            </TouchableOpacity>
+
+            {Platform.OS === "android" && (
+              <View style={styles.setDeadlineContainerStyle}>
+                {removeDateInAndroid && (
+                  <TouchableOpacity
+                    onPress={() => {
+                      setRemoveDateInAndroid(false);
+                      if (deadlineSetter) deadlineSetter(null);
+                    }}
+                  >
+                    <AntDesign name="close" size={24} color="black" />
+                  </TouchableOpacity>
+                )}
+
+                <TouchableOpacity
+                  style={{ marginRight: wp(1) }}
+                  onPress={() => {
+                    setRemoveDateInAndroid(true);
+                    if (!deadlineDate && deadlineSetter) {
+                      deadlineSetter(new Date());
+                    }
+                    showMode("date");
+                  }}
+                >
+                  <Text style={styles.labelStyle}>
+                    {deadlineDate ? readableDateDay(deadlineDate) : "Set Date"}
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={{ marginLeft: wp(1) }}
+                  onPress={() => {
+                    setRemoveDateInAndroid(true);
+                    if (!deadlineDate && deadlineSetter) {
+                      deadlineSetter(new Date());
+                    }
+                    showMode("time");
+                  }}
+                >
+                  <Text style={styles.labelStyle}>
+                    {deadlineDate ? readableDateTime(deadlineDate) : "Set Time"}
+                  </Text>
+                </TouchableOpacity>
+                <FontAwesome
+                  name="calendar-plus-o"
+                  size={24}
+                  color="black"
+                  style={{ marginLeft: wp(2) }}
+                />
+              </View>
+            )}
+            {Platform.OS === "ios" && !isDateVisibleInIos && (
+              <View style={styles.setDeadlineContainerStyle}>
+                <TouchableOpacity
+                  style={{ marginRight: wp(1) }}
+                  onPress={() => {
+                    if (!deadlineDate && deadlineSetter) {
+                      setIsDateVisibleInIos(true);
+                      deadlineSetter(new Date());
+                    } else {
+                      setIsDateVisibleInIos(true);
+                    }
+                  }}
+                >
+                  <Text style={styles.labelStyle}>
+                    {deadlineDate ? readableDateDay(deadlineDate) : "Set Date"}
+                  </Text>
+                </TouchableOpacity>
+
+                <FontAwesome
+                  name="calendar-plus-o"
+                  size={24}
+                  color="black"
+                  style={{ marginLeft: wp(2) }}
+                />
+              </View>
+            )}
+            {isDateVisibleInIos && Platform.OS === "ios" && (
+              <View
+                style={{
+                  alignItems: "center",
+                  marginTop: hp(2),
+                  flexDirection: "row",
+                  justifyContent: "center",
+                }}
+              >
                 <TouchableOpacity
                   onPress={() => {
-                    setRemoveDateInAndroid(false);
-                    if (deadlineSetter) deadlineSetter(null);
+                    if (modalMode === "add") {
+                      setIsDateVisibleInIos(false);
+                      if (deadlineSetter) deadlineSetter(null);
+                    } else {
+                      setIsDateVisibleInIos(false);
+                      if (deadlineSetter) deadlineSetter(deadlineDate);
+                    }
                   }}
                 >
                   <AntDesign name="close" size={24} color="black" />
                 </TouchableOpacity>
-              )}
+                <DateTimePicker
+                  value={deadlineDate ? deadlineDate : new Date()}
+                  mode={"datetime"}
+                  onChange={onChangeForIos}
+                />
+              </View>
+            )}
 
-              <TouchableOpacity
-                style={{ marginRight: wp(1) }}
+            <View style={styles.buttonContainer}>
+              <Button
+                title={"Cancel"}
+                buttonStyle={styles.confirmButtonStyle}
+                titleStyle={styles.confirmButtonTitleStyle}
                 onPress={() => {
-                  setRemoveDateInAndroid(true);
-                  if (!deadlineDate && deadlineSetter) {
-                    deadlineSetter(new Date());
-                  }
-                  showMode("date");
+                  setIsDateVisibleInIos(false);
+                  setIsAddTaskModalVisible();
+                  removeSet();
                 }}
-              >
-                <Text style={styles.labelStyle}>
-                  {deadlineDate ? readableDateDay(deadlineDate) : "Set Date"}
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={{ marginLeft: wp(1) }}
-                onPress={() => {
-                  setRemoveDateInAndroid(true);
-                  if (!deadlineDate && deadlineSetter) {
-                    deadlineSetter(new Date());
-                  }
-                  showMode("time");
-                }}
-              >
-                <Text style={styles.labelStyle}>
-                  {deadlineDate ? readableDateTime(deadlineDate) : "Set Time"}
-                </Text>
-              </TouchableOpacity>
-              <FontAwesome
-                name="calendar-plus-o"
-                size={24}
-                color="black"
-                style={{ marginLeft: wp(2) }}
+              />
+              <Button
+                title={"Confirm"}
+                buttonStyle={styles.confirmButtonStyle}
+                titleStyle={styles.confirmButtonTitleStyle}
+                onPress={() => confirmFunction()}
               />
             </View>
-          )}
-          {Platform.OS === "ios" && !isDateVisibleInIos && (
-            <View style={styles.setDeadlineContainerStyle}>
-              <TouchableOpacity
-                style={{ marginRight: wp(1) }}
-                onPress={() => {
-                  if (!deadlineDate && deadlineSetter) {
-                    setIsDateVisibleInIos(true);
-                    deadlineSetter(new Date());
-                  } else {
-                    setIsDateVisibleInIos(true);
-                  }
-                }}
-              >
-                <Text style={styles.labelStyle}>
-                  {deadlineDate ? readableDateDay(deadlineDate) : "Set Date"}
-                </Text>
-              </TouchableOpacity>
-
-              <FontAwesome
-                name="calendar-plus-o"
-                size={24}
-                color="black"
-                style={{ marginLeft: wp(2) }}
-              />
-            </View>
-          )}
-          {isDateVisibleInIos && Platform.OS === "ios" && (
-            <View
-              style={{
-                alignItems: "center",
-                marginTop: hp(2),
-                flexDirection: "row",
-                justifyContent: "center",
-              }}
-            >
-              <TouchableOpacity
-                onPress={() => {
-                  if (modalMode === "add") {
-                    setIsDateVisibleInIos(false);
-                    if (deadlineSetter) deadlineSetter(null);
-                  } else {
-                    setIsDateVisibleInIos(false);
-                    if (deadlineSetter) deadlineSetter(deadlineDate);
-                  }
-                }}
-              >
-                <AntDesign name="close" size={24} color="black" />
-              </TouchableOpacity>
-              <DateTimePicker
-                value={deadlineDate ? deadlineDate : new Date()}
-                mode={"datetime"}
-                onChange={onChangeForIos}
-              />
-            </View>
-          )}
-
-          <View style={styles.buttonContainer}>
-            <Button
-              title={"Cancel"}
-              buttonStyle={styles.confirmButtonStyle}
-              titleStyle={styles.confirmButtonTitleStyle}
-              onPress={() => {
-                setIsDateVisibleInIos(false);
-                setIsAddTaskModalVisible();
-                removeSet();
-              }}
-            />
-            <Button
-              title={"Confirm"}
-              buttonStyle={styles.confirmButtonStyle}
-              titleStyle={styles.confirmButtonTitleStyle}
-              onPress={() => confirmFunction()}
-            />
           </View>
         </View>
-      </View>
+      </TouchableWithoutFeedback>
     </Modal>
   );
 };
