@@ -17,7 +17,7 @@ type User = {
 type TaskNotification = {
   _id: String;
   userId: String;
-  isRead: false;
+  isRead: boolean;
   notificationMessage: String;
   task: Task;
 };

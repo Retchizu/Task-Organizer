@@ -4,6 +4,7 @@ type UserContextValue = {
   user: User | null;
   signUser: (user: User) => void;
   deleteUser: (user: User) => void;
+  updateUserDisplayPicture: (pictureUrl: string) => void;
 };
 
 const UserContext = createContext<UserContextValue | undefined>(undefined);
@@ -21,8 +22,17 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({
     setUser(null);
   };
 
+  const updateUserDisplayPicture = (pictureUrl: String) => {
+    setUser((prev) => {
+      if (!prev) return null;
+      return { ...prev, displayPicture: pictureUrl };
+    });
+  };
+
   return (
-    <UserContext.Provider value={{ user, signUser, deleteUser }}>
+    <UserContext.Provider
+      value={{ user, signUser, deleteUser, updateUserDisplayPicture }}
+    >
       {children}
     </UserContext.Provider>
   );

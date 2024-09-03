@@ -34,7 +34,9 @@ const DrawerLayout = () => {
   };
 
   useEffect(() => {
-    setNotificationValue(notificationList.length);
+    setNotificationValue(
+      notificationList.filter((noitification) => !noitification.isRead).length
+    );
   }, [notificationList]);
 
   return (

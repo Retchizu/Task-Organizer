@@ -19,20 +19,25 @@ import { getNotificationUrl } from "../url";
 import * as SecureStore from "expo-secure-store";
 import { handleUnauthorizedAccess } from "../task-methods/auth-methods/handleUnauthorizedAccess";
 import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useTaskContext } from "../context/TaskContext";
 import {
   readableDateDay,
   readableDateTime,
 } from "../task-methods/readableDate";
-import * as Notifications from "expo-notifications";
+import Octicons from "@expo/vector-icons/Octicons";
+import { updateNotificationStatus } from "../task-methods/notification-methods/updateNotificationStatus";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { deleteAllNotification } from "../task-methods/notification-methods/deleteAllNotification";
 
 const NotificationModal = () => {
   const { isNotificationModalVisible, toggleNotificationModalVisibility } =
     useNotificationModalContext();
-  const { notificationList, setNotificationList } = useNotifcationContext();
+  const { notificationList, setNotificationList, updateNotification } =
+    useNotifcationContext();
   const { tasks } = useTaskContext();
   const router = useRouter();
+  const accessToken = SecureStore.getItem("accessToken");
 
   type NotificationData = {
     _id: string;
@@ -66,8 +71,7 @@ const NotificationModal = () => {
         }
       );
 
-      console.log(filteredResult);
-      setNotificationList(filteredResult);
+      setNotificationList(filteredResult.reverse());
     } catch (error) {
       const axiosError = await handleUnauthorizedAccess(error);
       if (axiosError) {
@@ -92,6 +96,10 @@ const NotificationModal = () => {
     getNotificationList();
   }, [tasks]);
 
+  const renderBoldTaskLabel = (taskTitle: String) => (
+    <Text style={{ fontFamily: "Inconsolata-Bold" }}>{taskTitle}</Text>
+  );
+
   return (
     <Modal
       isVisible={isNotificationModalVisible}
@@ -101,17 +109,33 @@ const NotificationModal = () => {
     >
       <View style={styles.ModalParentContainer}>
         <View style={styles.ModalContentContainer}>
-          <TouchableOpacity
-            onPress={() => toggleNotificationModalVisibility()}
-            style={{ padding: wp(2) }}
-          >
-            <AntDesign name="close" size={24} color="black" />
-          </TouchableOpacity>
+          <View style={styles.notificationHeaderIcon}>
+            <TouchableOpacity
+              onPress={() => toggleNotificationModalVisibility()}
+            >
+              <AntDesign name="close" size={24} color="black" />
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={async () => {
+                if (accessToken) {
+                  await deleteAllNotification(accessToken, router);
+                  setNotificationList([]);
+                } else {
+                  console.log("accessToken not found");
+                  router.replace("authentication/logIn");
+                }
+              }}
+            >
+              <MaterialIcons name="delete" size={24} color="black" />
+            </TouchableOpacity>
+          </View>
+
           <Text
             style={{
               fontFamily: "Inconsolata-SemiBold",
               fontSize: wp(7),
               marginLeft: wp(2),
+              marginBottom: hp(1),
             }}
           >
             Notifications
@@ -119,17 +143,50 @@ const NotificationModal = () => {
           <FlatList
             data={notificationList}
             renderItem={({ item }) => (
-              <View style={styles.notificationContainer}>
-                <Text style={styles.notificationHeader}>
-                  {item.notificationMessage}
-                </Text>
-                <Text style={styles.notificationDescription}>
-                  Your task "{item.task.taskLabel}" is due on{" "}
-                  {readableDateDay(item.task.taskDeadline)}{" "}
-                  {readableDateTime(item.task.taskDeadline)}. Don't forget to
-                  complete it on time!
-                </Text>
-              </View>
+              <TouchableOpacity
+                style={styles.notificationContainer}
+                activeOpacity={0.6}
+                onPress={async () => {
+                  if (accessToken) {
+                    await updateNotificationStatus(
+                      item._id,
+                      true,
+                      accessToken,
+                      router
+                    );
+
+                    updateNotification(item._id, { isRead: true });
+                  } else {
+                    console.log("accessToken not found");
+                    router.replace("authentication/logIn");
+                  }
+                }}
+              >
+                <View style={styles.notificationTitle}>
+                  <Text style={styles.notificationHeader}>
+                    {item.notificationMessage}
+                  </Text>
+                  {!item.isRead && (
+                    <Octicons
+                      name="dot-fill"
+                      size={24}
+                      color="red"
+                      style={{ marginRight: wp(2) }}
+                    />
+                  )}
+                </View>
+                <View style={styles.notificationChildren}>
+                  <Text style={styles.notificationDescription}>
+                    Your task "{renderBoldTaskLabel(item.task.taskLabel)}" is
+                    due on{" "}
+                    {item.task.taskDeadline &&
+                      readableDateDay(item.task.taskDeadline)}{" "}
+                    {item.task.taskDeadline &&
+                      readableDateTime(item.task.taskDeadline)}
+                    . Don't forget to complete it on time!
+                  </Text>
+                </View>
+              </TouchableOpacity>
             )}
           />
         </View>
@@ -143,7 +200,7 @@ export default NotificationModal;
 const styles = StyleSheet.create({
   ModalContentContainer: {
     backgroundColor: "white",
-    width: wp(70),
+    width: wp(80),
     height: hp(80),
     borderRadius: wp(2),
   },
@@ -165,5 +222,19 @@ const styles = StyleSheet.create({
     fontFamily: "Inconsolata-Regular",
     fontSize: wp(3.8),
     marginLeft: wp(4),
+  },
+  notificationChildren: {
+    flexDirection: "row",
+  },
+  notificationTitle: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  notificationHeaderIcon: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: hp(1),
+    alignItems: "center",
+    paddingHorizontal: wp(2),
   },
 });

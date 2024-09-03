@@ -19,6 +19,10 @@ type NotificationContextValue = {
   schedulePushNotification: (task: Task) => Promise<void>;
   notificationList: TaskNotification[];
   setNotificationList: React.Dispatch<React.SetStateAction<TaskNotification[]>>;
+  updateNotification: (
+    notificationId: String,
+    attribute: Partial<TaskNotification>
+  ) => void;
 };
 
 const NotificationContext = createContext<NotificationContextValue | undefined>(
@@ -43,6 +47,19 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({
       shouldSetBadge: false,
     }),
   });
+
+  const updateNotification = (
+    notificationId: String,
+    attribute: Partial<TaskNotification>
+  ) => {
+    setNotificationList((prev) =>
+      prev.map((notification) =>
+        notification._id === notificationId
+          ? { ...notification, ...attribute }
+          : notification
+      )
+    );
+  };
 
   const registerForPushNotificationAsync = async () => {
     let token;
@@ -117,6 +134,7 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({
           "Notification received:",
           notification.request.content.data
         );
+        console.log("did run in context");
         const user = await getCurrentUser(router);
         const task: Task = notification.request.content.data.task;
         if (user) {
@@ -149,10 +167,25 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({
     responseListener.current =
       Notifications.addNotificationResponseReceivedListener(
         async (response) => {
-          console.log("Notification response:", response.notification);
+          console.log(
+            "this is data from response",
+            response.notification.request.content.data.task
+          );
+          const taskResult = response.notification.request.content.data.task;
           const user = await getCurrentUser(router);
 
-          const task: Task = response.notification.request.content.data.task; // returned as null when clicked outside the app, fix later
+          const task: Task = {
+            id: taskResult._id,
+            userId: taskResult.userId,
+            taskLabel: taskResult.taskLabel,
+            taskDescription: taskResult.taskDescription ?? undefined,
+            taskStatus: taskResult.taskStatus,
+            ...(taskResult.taskDeadline && {
+              taskDeadline: new Date(taskResult.taskDeadline),
+            }),
+          };
+
+          console.log("convertedTask", task);
           if (user) {
             const result = await storeNotification(
               user.id,
@@ -201,6 +234,7 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({
         schedulePushNotification,
         notificationList,
         setNotificationList,
+        updateNotification,
       }}
     >
       {children}

@@ -17,7 +17,7 @@ import { handleUnauthorizedAccess } from "../../task-methods/auth-methods/handle
 import { useRouter } from "expo-router";
 
 const account = () => {
-  const { user } = useUserContext();
+  const { user, updateUserDisplayPicture } = useUserContext();
   const { tasks } = useTaskContext();
   const router = useRouter();
   const [completedTaskLength, setCompletedTaskLength] = useState("");
@@ -58,7 +58,8 @@ const account = () => {
             },
           }
         );
-        console.log(response.data, "Updated successfully");
+        console.log("Updated successfully");
+        return response.data.displayPicture;
       } catch (error) {
         if (axios.isAxiosError(error)) {
           const axiosError = await handleUnauthorizedAccess(error);
@@ -76,6 +77,7 @@ const account = () => {
                 }
               );
               console.log(response.data, "updated successfully in error");
+              return response.data.displayPicture;
             } else {
               router.replace("authentication/logIn");
             }
@@ -100,8 +102,13 @@ const account = () => {
   }, [tasks]);
 
   useEffect(() => {
-    console.log(selectedImage);
-    if (selectedImage) updateUserImage();
+    const unsubscribe = async () => {
+      if (selectedImage) {
+        const result = await updateUserImage();
+        updateUserDisplayPicture(result);
+      }
+    };
+    unsubscribe();
   }, [selectedImage]);
   return (
     <View style={{ flex: 1, margin: hp(2) }}>
@@ -114,7 +121,7 @@ const account = () => {
             source={
               user?.displayPicture
                 ? { uri: `data:image/png;base64,${user.displayPicture}` }
-                : selectedImage
+                : user?.displayPicture
                 ? { uri: `${selectedImage}` }
                 : require(".././../assets/ambatukam.jpg")
             }

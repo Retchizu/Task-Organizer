@@ -4,6 +4,7 @@ import {
   Text,
   View,
   TouchableOpacity,
+  Platform,
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import {
@@ -82,15 +83,22 @@ const TaskList: React.FC<TaskListProp> = ({ tasks, screenName }) => {
   const onChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
     const currentDate = selectedDate;
 
-    if (mode === "date" && event.type !== "dismissed") {
+    if (Platform.OS === "ios") {
       setDeadlineDate(currentDate ? currentDate : new Date());
+    }
+    if (Platform.OS === "android") {
+      if (mode === "date" && event.type !== "dismissed") {
+        setDeadlineDate(currentDate ? currentDate : new Date());
+        setIsDatePickerVisible(false);
+      }
+      if (mode === "time" && event.type !== "dismissed") {
+        setDeadlineDate(currentDate ? currentDate : new Date());
+        setIsDatePickerVisible(false);
+      }
+    }
+    if (Platform.OS === "android") {
       setIsDatePickerVisible(false);
     }
-    if (mode === "time" && event.type !== "dismissed") {
-      setDeadlineDate(currentDate ? currentDate : new Date());
-      setIsDatePickerVisible(false);
-    }
-    setIsDatePickerVisible(false);
   };
 
   const confirmFunction = async () => {
@@ -252,6 +260,7 @@ const TaskList: React.FC<TaskListProp> = ({ tasks, screenName }) => {
         deadlineSetter={setDeadlineDate}
         isDateVisibleInIos={isDateVisibleInIos}
         setIsDateVisibleInIos={setIsDateVisibleInIos}
+        onChangeForIos={onChange}
       />
       {isDatePickerVisible && (
         <DateTimePicker
