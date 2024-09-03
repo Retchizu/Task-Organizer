@@ -33,6 +33,7 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
   const [expoPushToken, setExpoPushToken] = useState("");
+  const [userInContext, setUserInContext] = useState<User | undefined>();
   const [notificationList, setNotificationList] = useState<TaskNotification[]>(
     []
   );
@@ -134,23 +135,37 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({
           "Notification received:",
           notification.request.content.data
         );
-        console.log("did run in context");
+
+        const taskResult = notification.request.content.data.task;
+        const task: Task = {
+          id: taskResult._id,
+          userId: taskResult.userId,
+          taskLabel: taskResult.taskLabel,
+          taskDescription: taskResult.taskDescription ?? undefined,
+          taskStatus: taskResult.taskStatus,
+          ...(taskResult.taskDeadline && {
+            taskDeadline: new Date(taskResult.taskDeadline),
+          }),
+        };
+        console.log("did run in received");
+
         const user = await getCurrentUser(router);
-        const task: Task = notification.request.content.data.task;
-        if (user) {
-          const result = await storeNotification(
-            user.id,
-            task.id.toString(),
-            "Upcoming deadline!",
-            router
-          );
-          setNotificationList((prev) => [
+        const result = await storeNotification(
+          user.id,
+          task.id.toString(),
+          "Upcoming deadline!",
+          new Date(),
+          router
+        );
+        setNotificationList((prev) =>
+          [
             ...prev,
             {
               _id: result._id,
               userId: result.userId,
               isRead: result.isRead,
               notificationMessage: result.notificationMessage,
+              createdAt: new Date(),
               task: {
                 id: task.id,
                 userId: task.userId,
@@ -160,8 +175,8 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({
                 taskDeadline: new Date(task.taskDeadline),
               },
             },
-          ]);
-        }
+          ].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+        );
       });
 
     responseListener.current =
@@ -171,8 +186,8 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({
             "this is data from response",
             response.notification.request.content.data.task
           );
+          console.log("did run in response");
           const taskResult = response.notification.request.content.data.task;
-          const user = await getCurrentUser(router);
 
           const task: Task = {
             id: taskResult._id,
@@ -186,21 +201,26 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({
           };
 
           console.log("convertedTask", task);
-          if (user) {
-            const result = await storeNotification(
-              user.id,
-              task.id.toString(),
-              "Upcoming deadline!",
-              router
-            );
 
-            setNotificationList((prev) => [
+          console.log("did run here in storeNOtif");
+          const user = await getCurrentUser(router);
+          const result = await storeNotification(
+            user.id.toString(),
+            task.id.toString(),
+            "Upcoming deadline!",
+            new Date(),
+            router
+          );
+
+          setNotificationList((prev) =>
+            [
               ...prev,
               {
                 _id: result._id,
                 userId: result.userId,
                 isRead: result.isRead,
                 notificationMessage: result.notificationMessage,
+                createdAt: new Date(),
                 task: {
                   id: task.id,
                   userId: task.userId,
@@ -210,8 +230,8 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({
                   taskDeadline: new Date(task.taskDeadline),
                 },
               },
-            ]);
-          }
+            ].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+          );
         }
       );
 
@@ -225,7 +245,7 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({
         console.log("notification listener removed");
       }
     };
-  }, [router]);
+  }, []);
 
   return (
     <NotificationContext.Provider

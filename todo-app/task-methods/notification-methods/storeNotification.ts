@@ -9,6 +9,7 @@ export const storeNotification = async (
   userId: string,
   taskId: string,
   notificationMessage: string,
+  createdAt: Date,
   router: Router
 ) => {
   try {
@@ -21,6 +22,7 @@ export const storeNotification = async (
         taskId,
         notificationMessage,
         false,
+        createdAt,
         accessToken
       );
     } else {
@@ -44,6 +46,7 @@ export const storeNotification = async (
           taskId,
           notificationMessage,
           false,
+          createdAt,
           accessToken
         );
       } else {

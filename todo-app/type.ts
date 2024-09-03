@@ -19,5 +19,6 @@ type TaskNotification = {
   userId: String;
   isRead: boolean;
   notificationMessage: String;
+  createdAt: Date;
   task: Task;
 };

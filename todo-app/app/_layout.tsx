@@ -50,6 +50,7 @@ const Layout = () => {
                   options={{ headerShown: false }}
                 />
               </Stack>
+
               <NotificationModal />
             </TaskProvider>
           </AddTaskModalProvider>

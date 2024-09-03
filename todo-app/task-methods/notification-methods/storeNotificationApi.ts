@@ -6,6 +6,7 @@ export const storeNotificationApi = async (
   taskId: string,
   notificationMessage: string,
   isRead: boolean,
+  createdAt: Date,
   accessToken: string
 ) => {
   return await axios.post(
@@ -15,6 +16,7 @@ export const storeNotificationApi = async (
       taskId: taskId,
       notificationMessage: notificationMessage,
       isRead: isRead,
+      createdAt: createdAt,
     },
     {
       headers: {

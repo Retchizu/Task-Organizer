@@ -45,6 +45,7 @@ const NotificationModal = () => {
     taskId: string;
     isRead: boolean;
     notificationMessage: string;
+    createdAt: Date;
   };
 
   const getNotificationList = async () => {
@@ -55,6 +56,7 @@ const NotificationModal = () => {
           Authorization: `${accesssToken}`,
         },
       });
+
       const filteredResult: TaskNotification[] = result.data.flatMap(
         (item: NotificationData) => {
           const filteredTaskList = tasks.filter(
@@ -65,13 +67,18 @@ const NotificationModal = () => {
             userId: item.userId,
             isRead: item.isRead,
             notificationMessage: item.notificationMessage,
+            createdAt: new Date(item.createdAt),
             task: filteredTask,
           }));
           return result;
         }
       );
 
-      setNotificationList(filteredResult.reverse());
+      setNotificationList(
+        filteredResult.sort(
+          (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
+        )
+      );
     } catch (error) {
       const axiosError = await handleUnauthorizedAccess(error);
       if (axiosError) {
@@ -92,13 +99,12 @@ const NotificationModal = () => {
     }
   };
 
-  useEffect(() => {
-    getNotificationList();
-  }, [tasks]);
-
   const renderBoldTaskLabel = (taskTitle: String) => (
     <Text style={{ fontFamily: "Inconsolata-Bold" }}>{taskTitle}</Text>
   );
+  useEffect(() => {
+    getNotificationList();
+  }, [tasks]);
 
   return (
     <Modal

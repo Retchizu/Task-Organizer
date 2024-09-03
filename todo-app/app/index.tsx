@@ -10,7 +10,6 @@ import { refreshToken as refreshTokenMethod } from "../task-methods/auth-methods
 import { useUserContext } from "../context/UserContext";
 import { getUser } from "../task-methods/auth-methods/logInUser";
 import { useEffect, useState } from "react";
-import { handleTokenErrors } from "../task-methods/handleTokenErrors";
 import * as SecureStore from "expo-secure-store";
 
 const App = () => {
@@ -30,24 +29,24 @@ const App = () => {
   const autoLogIn = async () => {
     try {
       setIsLoading(true);
-      const refreshToken = SecureStore.getItem("refreshToken");
-      const refreshTokenResult = await refreshTokenMethod();
-      console.log(refreshTokenResult);
+      let refreshTokenResult;
 
-      if (refreshTokenResult === 200) {
-        const userResult = await getUser();
+      const userResult = await getUser();
 
-        signUser(userResult);
-
-        handleTokenErrors(userResult);
-        setIsLoading(false);
-        return;
-      }
-      if (refreshToken && refreshTokenResult === 401) {
-        router.replace("authentication/logIn");
+      if (userResult === 401) {
+        refreshTokenResult = await refreshTokenMethod();
+        if (refreshTokenResult === 401 || refreshTokenResult === 500) {
+          console.log("Session expired or unauthorized, Log in again");
+          SecureStore.deleteItemAsync("accessToken");
+          SecureStore.deleteItemAsync("refreshToken");
+          router.replace("authentication/logIn");
+          return;
+        }
       }
 
-      handleTokenErrors(refreshTokenResult);
+      signUser(userResult);
+      setIsLoading(false);
+      return;
     } catch (error) {
       console.log("Error:", (error as Error).message);
     } finally {
