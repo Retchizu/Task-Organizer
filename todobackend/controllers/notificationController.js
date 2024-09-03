@@ -2,11 +2,12 @@ const Notification = require("../models/Notification");
 
 exports.storeNotification = async (req, res) => {
   try {
-    const { userId, taskId, notificationMessage, isRead } = req.body;
+    const { userId, taskId, notificationMessage, isRead, createdAt } = req.body;
 
     const notification = await Notification.create({
       userId: userId,
       taskId: taskId,
+      createdAt: createdAt,
       notificationMessage: notificationMessage,
       isRead: isRead,
     });

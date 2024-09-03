@@ -5,6 +5,7 @@ const notificationSchema = new mongoose.Schema({
   taskId: { type: mongoose.SchemaTypes.ObjectId, required: true },
   notificationMessage: { type: String, required: true },
   isRead: { type: Boolean, default: false, required: true },
+  createdAt: { type: Date, required: true },
 });
 
 const Notification = mongoose.model("Notification", notificationSchema);
