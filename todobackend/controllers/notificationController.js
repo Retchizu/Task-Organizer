@@ -1,7 +1,5 @@
 const Notification = require("../models/Notification");
 
-const { ObjectId } = require("mongoose");
-
 exports.storeNotification = async (req, res) => {
   try {
     const { userId, taskId, notificationMessage, isRead } = req.body;
@@ -33,9 +31,7 @@ exports.getNotification = async (req, res) => {
 
 exports.deleteNotification = async (req, res) => {
   try {
-    const { notificationId } = req.params;
-    const deletedNotification = await Notification.findByIdAndDelete({
-      _id: notificationId,
+    const deletedNotification = await Notification.deleteMany({
       userId: req.user.id,
     });
 
@@ -47,11 +43,11 @@ exports.deleteNotification = async (req, res) => {
 
 exports.updateReadStatus = async (req, res) => {
   try {
-    const { notificationId } = req.params;
+    const { id } = req.params;
     const { isRead } = req.body;
 
     const notification = await Notification.findByIdAndUpdate(
-      { _id: notificationId },
+      { _id: id },
       {
         isRead: isRead,
       }

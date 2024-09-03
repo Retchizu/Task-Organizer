@@ -22,7 +22,7 @@ router.delete(
 );
 
 router.put(
-  "/update-status",
+  "/update-status/:id",
   validateToken,
   notificatiionController.updateReadStatus
 );
