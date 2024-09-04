@@ -21,12 +21,16 @@ The Full Stack Task Organizer is a mobile application designed to help users man
 ### API Communication
 - **Axios:** Used for making HTTP requests from the frontend to the backend.
 
+### Notifications
+- **Expo Notifications:** Notifies users when a task deadline is approaching.
+
 ## Features
 
 - **Task Management:** Create, update, delete, and view tasks.
 - **User Authentication:** Secure login and registration system with JWT and bcrypt.
 - **Real-Time Updates:** Ensure tasks are kept up to date with the latest changes.
 - **Responsive UI:** Optimized for mobile devices with smooth navigation using Expo Router.
+- **Deadline Reminders:** Users receive notifications when a task's deadline is approaching, ensuring they stay on top of their tasks.
 
 ## Design
 
